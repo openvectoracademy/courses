@@ -1,6 +1,3 @@
-// Alcove Messenger — Complete Backend API
-// Cloudflare Pages + D1 (binding: COMMUNITY_DB)
-
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -77,9 +74,8 @@ async function requireAdmin(req) {
 }
 
 async function ensureTables(db) {
-  if (globalThis.__alcoveTablesReady) return;
-
-  const tables = [
+  // Create tables one by one with error handling
+  const tableSQLs = [
     `CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -180,18 +176,24 @@ async function ensureTables(db) {
     )`
   ];
 
-  for (const sql of tables) {
-    try { await db.prepare(sql).run(); } catch (e) { /* ignore */ }
+  for (const sql of tableSQLs) {
+    try {
+      await db.prepare(sql).run();
+    } catch (e) {
+      console.error('Table creation error:', e.message);
+    }
   }
 
-  // Seed admin
-  const adminHash = await sha256('Admin@2026!');
-  await db.prepare(
-    `INSERT OR IGNORE INTO users (name, email, password, role, is_approved)
-     VALUES ('Admin', 'admin@alcove.messenger', ?, 'admin', 1)`
-  ).bind(adminHash).run();
-
-  globalThis.__alcoveTablesReady = true;
+  // Seed admin user
+  try {
+    const adminHash = await sha256('Admin@2026!');
+    await db.prepare(
+      `INSERT OR IGNORE INTO users (name, email, password, role, is_approved)
+       VALUES ('Admin', 'admin@alcove.messenger', ?, 'admin', 1)`
+    ).bind(adminHash).run();
+  } catch (e) {
+    console.error('Admin seed error:', e.message);
+  }
 }
 
 export async function onRequest(context) {
@@ -206,32 +208,59 @@ export async function onRequest(context) {
   }
 
   try {
-    await ensureTables(db);
+    // Initialize tables on first request
+    if (!globalThis.__alcoveTablesDone) {
+      await ensureTables(db);
+      globalThis.__alcoveTablesDone = true;
+    }
 
     // ==================== AUTH ====================
     if (method === 'POST' && path === '/auth/login') {
-      const { email, password } = await request.json();
-      if (!email || !password) return err('Email and password required');
-      const hash = await sha256(password);
-      const user = await db.prepare(
-        'SELECT * FROM users WHERE email = ? AND password = ? AND is_approved = 1'
-      ).bind(email, hash).first();
-      if (!user) return err('Invalid credentials', 401);
-      const token = await createToken(user);
-      return json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+      try {
+        const body = await request.json();
+        const { email, password } = body;
+        if (!email || !password) return err('Email and password required');
+        const hash = await sha256(password);
+        const user = await db.prepare(
+          'SELECT * FROM users WHERE email = ? AND password = ? AND is_approved = 1'
+        ).bind(email, hash).first();
+        if (!user) return err('Invalid email or password', 401);
+        const token = await createToken(user);
+        return json({
+          token,
+          user: { id: user.id, name: user.name, email: user.email, role: user.role }
+        });
+      } catch (e) {
+        return err('Login failed: ' + e.message, 500);
+      }
     }
 
     if (method === 'POST' && path === '/auth/signup') {
-      const { name, email, password } = await request.json();
-      if (!name || !email || !password) return err('All fields required');
-      if (password.length < 6) return err('Password must be at least 6 characters');
-      const existing = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
-      if (existing) return err('Email already registered', 409);
-      const hash = await sha256(password);
-      const result = await db.prepare(
-        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)'
-      ).bind(name, email, hash).run();
-      return json({ message: 'Account created', userId: result.meta.last_row_id }, 201);
+      try {
+        const body = await request.json();
+        const { name, email, password } = body;
+        if (!name || !email || !password) return err('All fields required');
+        if (password.length < 6) return err('Password must be at least 6 characters');
+        
+        const existing = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+        if (existing) return err('Email already registered', 409);
+        
+        const hash = await sha256(password);
+        const result = await db.prepare(
+          'INSERT INTO users (name, email, password) VALUES (?, ?, ?)'
+        ).bind(name, email, hash).run();
+        
+        // Auto-login after signup
+        const newUser = await db.prepare('SELECT * FROM users WHERE id = ?').bind(result.meta.last_row_id).first();
+        const token = await createToken(newUser);
+        return json({
+          token,
+          user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
+          message: 'Account created'
+        }, 201);
+      } catch (e) {
+        return err('Signup failed: ' + e.message, 500);
+      }
     }
 
     // ==================== GROUPS ====================
@@ -248,13 +277,13 @@ export async function onRequest(context) {
       const already = await db.prepare(
         'SELECT id FROM group_members WHERE group_id = ? AND user_id = ?'
       ).bind(group.id, user.id).first();
-      if (already) return err('Already a member of this group', 409);
+      if (already) return err('Already a member', 409);
       
       await db.prepare(
         'INSERT INTO group_members (group_id, user_id) VALUES (?, ?)'
       ).bind(group.id, user.id).run();
       
-      return json({ group: { id: group.id, name: group.name, description: group.description } });
+      return json({ group: { id: group.id, name: group.name } });
     }
 
     if (method === 'GET' && path === '/groups') {
@@ -272,27 +301,17 @@ export async function onRequest(context) {
       const groupId = path.match(/^\/groups\/(\d+)$/)[1];
       const group = await db.prepare('SELECT * FROM groups_table WHERE id = ?').bind(groupId).first();
       if (!group) return err('Group not found', 404);
-      const memberCount = await db.prepare(
-        'SELECT COUNT(*) as count FROM group_members WHERE group_id = ? AND is_banned = 0'
+      const count = await db.prepare(
+        'SELECT COUNT(*) as c FROM group_members WHERE group_id = ? AND is_banned = 0'
       ).bind(groupId).first();
-      return json({ group: { ...group, member_count: memberCount.count } });
-    }
-
-    if (method === 'POST' && path === '/groups/leave') {
-      const user = await requireAuth(request);
-      const { group_id } = await request.json();
-      await db.prepare('DELETE FROM group_members WHERE group_id = ? AND user_id = ?').bind(group_id, user.id).run();
-      return json({ message: 'Left group' });
+      return json({ group: { ...group, member_count: count.c } });
     }
 
     // ==================== GROUP MESSAGES ====================
     if (method === 'GET' && path.match(/^\/groups\/(\d+)\/messages$/)) {
       const user = await requireAuth(request);
       const groupId = path.match(/^\/groups\/(\d+)\/messages$/)[1];
-      
-      // Auto-clean old messages
       await db.prepare("DELETE FROM group_messages WHERE created_at < datetime('now', '-24 hours')").run();
-      
       const messages = await db.prepare(
         'SELECT * FROM group_messages WHERE group_id = ? ORDER BY created_at ASC LIMIT 200'
       ).bind(groupId).all();
@@ -308,7 +327,7 @@ export async function onRequest(context) {
       const member = await db.prepare(
         'SELECT id FROM group_members WHERE group_id = ? AND user_id = ? AND is_banned = 0'
       ).bind(groupId, user.id).first();
-      if (!member) return err('Not a member of this group', 403);
+      if (!member) return err('Not a member', 403);
       
       await db.prepare(
         'INSERT INTO group_messages (group_id, user_id, user_name, message) VALUES (?, ?, ?, ?)'
@@ -317,7 +336,7 @@ export async function onRequest(context) {
       return json({ sent: true });
     }
 
-    // ==================== CONVERSATIONS (DMs) ====================
+    // ==================== CONVERSATIONS ====================
     if (method === 'GET' && path === '/conversations') {
       const user = await requireAuth(request);
       const dms = await db.prepare(
@@ -333,14 +352,10 @@ export async function onRequest(context) {
     if (method === 'GET' && path.match(/^\/conversations\/(\d+)\/messages$/)) {
       const user = await requireAuth(request);
       const roomId = path.match(/^\/conversations\/(\d+)\/messages$/)[1];
-      
       const room = await db.prepare('SELECT * FROM dm_rooms WHERE id = ? AND is_active = 1').bind(roomId).first();
-      if (!room) return err('Conversation not found', 404);
+      if (!room) return err('Not found', 404);
       if (room.user1_id !== user.id && room.user2_id !== user.id) return err('Access denied', 403);
-      
-      // Auto-clean old messages
       await db.prepare("DELETE FROM dm_messages WHERE created_at < datetime('now', '-7 days')").run();
-      
       const messages = await db.prepare(
         'SELECT * FROM dm_messages WHERE dm_room_id = ? ORDER BY created_at ASC LIMIT 200'
       ).bind(roomId).all();
@@ -352,15 +367,12 @@ export async function onRequest(context) {
       const roomId = path.match(/^\/conversations\/(\d+)\/send$/)[1];
       const { message } = await request.json();
       if (!message || !message.trim()) return err('Message required');
-      
       const room = await db.prepare('SELECT * FROM dm_rooms WHERE id = ? AND is_active = 1').bind(roomId).first();
-      if (!room) return err('Conversation not found', 404);
+      if (!room) return err('Not found', 404);
       if (room.user1_id !== user.id && room.user2_id !== user.id) return err('Access denied', 403);
-      
       await db.prepare(
         'INSERT INTO dm_messages (dm_room_id, user_id, message) VALUES (?, ?, ?)'
       ).bind(roomId, user.id, message.trim()).run();
-      
       return json({ sent: true });
     }
 
@@ -371,71 +383,58 @@ export async function onRequest(context) {
       const tasks = await db.prepare(
         'SELECT * FROM daily_tasks WHERE group_id = ? AND is_active = 1 ORDER BY sort_order'
       ).bind(groupId).all();
-      
-      // Get today's completions
       const today = new Date().toISOString().substring(0, 10);
       const completions = await db.prepare(
         'SELECT task_id FROM task_completions WHERE user_id = ? AND group_id = ? AND date(completed_at) = ?'
       ).bind(user.id, groupId, today).all();
-      const completedIds = completions.results.map(c => c.task_id);
-      
+      const doneIds = completions.results.map(c => c.task_id);
       return json({
-        tasks: tasks.results.map(t => ({ ...t, completed: completedIds.includes(t.id) }))
+        tasks: tasks.results.map(t => ({ ...t, completed: doneIds.includes(t.id) }))
       });
     }
 
     if (method === 'POST' && path === '/tasks/complete') {
       const user = await requireAuth(request);
       const { group_id, task_id } = await request.json();
-      
-      const today = new Date().toISOString().substring(0, 10);
       await db.prepare(
         'INSERT OR IGNORE INTO task_completions (user_id, group_id, task_id, completed_at) VALUES (?, ?, ?, datetime("now"))'
       ).bind(user.id, group_id, task_id).run();
-      
       return json({ completed: true });
     }
 
     if (method === 'POST' && path === '/tasks/complete-all') {
       const user = await requireAuth(request);
       const { group_id } = await request.json();
-      
       const tasks = await db.prepare(
         'SELECT id FROM daily_tasks WHERE group_id = ? AND is_active = 1'
       ).bind(group_id).all();
       
-      const today = new Date().toISOString().substring(0, 10);
-      
-      for (const task of tasks.results) {
+      for (const t of tasks.results) {
         await db.prepare(
           'INSERT OR IGNORE INTO task_completions (user_id, group_id, task_id, completed_at) VALUES (?, ?, ?, datetime("now"))'
-        ).bind(user.id, group_id, task.id).run();
+        ).bind(user.id, group_id, t.id).run();
       }
       
-      // Calculate rewards
-      const wallet = await db.prepare(
+      const today = new Date().toISOString().substring(0, 10);
+      let wallet = await db.prepare(
         'SELECT * FROM wallet WHERE user_id = ? AND group_id = ?'
       ).bind(user.id, group_id).first();
       
       let streak = 1, multiplier = 1, coins = 1, diamonds = 0;
       
       if (wallet && wallet.last_completion_date) {
-        const lastDate = new Date(wallet.last_completion_date);
+        const last = new Date(wallet.last_completion_date);
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
-        if (lastDate.toDateString() === yesterday.toDateString()) {
+        if (last.toDateString() === yesterday.toDateString()) {
           streak = (wallet.current_streak || 0) + 1;
-          multiplier = wallet.week_multiplier || 1;
         }
+        multiplier = wallet.week_multiplier || 1;
         
         if (streak % 7 === 0) {
-          const weeks = Math.floor(streak / 7);
           coins = streak + (streak * multiplier);
           diamonds = 1 * multiplier;
           multiplier++;
-        } else {
-          coins = 1;
         }
       }
       
@@ -453,12 +452,7 @@ export async function onRequest(context) {
         ).bind(user.id, group_id, coins, diamonds, streak, streak, today, multiplier).run();
       }
       
-      return json({
-        coins_earned: coins,
-        diamonds_earned: diamonds,
-        streak: streak,
-        multiplier: multiplier
-      });
+      return json({ coins_earned: coins, diamonds_earned: diamonds, streak });
     }
 
     // ==================== WALLET ====================
@@ -477,8 +471,7 @@ export async function onRequest(context) {
       const resources = await db.prepare(
         `SELECT r.*, u.name as user_name FROM resources r
          JOIN users u ON r.user_id = u.id
-         WHERE r.group_id = ? AND r.is_approved = 1
-         ORDER BY r.created_at DESC`
+         WHERE r.group_id = ? AND r.is_approved = 1 ORDER BY r.created_at DESC`
       ).bind(groupId).all();
       return json({ resources: resources.results });
     }
@@ -488,24 +481,20 @@ export async function onRequest(context) {
       const { group_id, title, type, content } = await request.json();
       if (!title || !type || !content) return err('Title, type, and content required');
       
-      // Check diamonds
       const wallet = await db.prepare(
         'SELECT diamonds FROM wallet WHERE user_id = ? AND group_id = ?'
       ).bind(user.id, group_id).first();
+      if (!wallet || wallet.diamonds < 3) return err('Need 3 diamonds. Complete daily tasks!', 402);
       
-      if (!wallet || wallet.diamonds < 3) return err('You need 3 diamonds to post a resource. Complete daily tasks!', 402);
-      
-      // Deduct diamonds
       await db.prepare(
         'UPDATE wallet SET diamonds = diamonds - 3 WHERE user_id = ? AND group_id = ?'
       ).bind(user.id, group_id).run();
       
-      // Insert resource
-      const result = await db.prepare(
+      await db.prepare(
         'INSERT INTO resources (group_id, user_id, title, type, content, diamonds_spent) VALUES (?, ?, ?, ?, ?, 3)'
       ).bind(group_id, user.id, title, type, content).run();
       
-      return json({ id: result.meta.last_row_id, message: 'Resource submitted for approval' }, 201);
+      return json({ message: 'Submitted for approval' }, 201);
     }
 
     // ==================== ADMIN ====================
@@ -519,14 +508,11 @@ export async function onRequest(context) {
       const admin = await requireAdmin(request);
       const { name, description } = await request.json();
       if (!name) return err('Name required');
-      
       const code = 'ALC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      const result = await db.prepare(
+      await db.prepare(
         'INSERT INTO groups_table (name, description, invite_code, created_by) VALUES (?, ?, ?, ?)'
       ).bind(name, description || '', code, admin.id).run();
-      
-      return json({ id: result.meta.last_row_id, invite_code: code }, 201);
+      return json({ invite_code: code, message: 'Group created' }, 201);
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/groups\/(\d+)$/)) {
@@ -534,7 +520,7 @@ export async function onRequest(context) {
       const groupId = path.match(/^\/admin\/groups\/(\d+)$/)[1];
       const { is_active } = await request.json();
       await db.prepare('UPDATE groups_table SET is_active = ? WHERE id = ?').bind(is_active ? 1 : 0, groupId).run();
-      return json({ message: is_active ? 'Group activated' : 'Group closed' });
+      return json({ message: is_active ? 'Activated' : 'Closed' });
     }
 
     if (method === 'DELETE' && path.match(/^\/admin\/groups\/(\d+)$/)) {
@@ -548,152 +534,125 @@ export async function onRequest(context) {
       await db.prepare('DELETE FROM resources WHERE group_id = ?').bind(groupId).run();
       await db.prepare('DELETE FROM ai_settings WHERE group_id = ?').bind(groupId).run();
       await db.prepare('DELETE FROM groups_table WHERE id = ?').bind(groupId).run();
-      return json({ message: 'Group deleted' });
+      return json({ message: 'Deleted' });
     }
 
     if (method === 'GET' && path.match(/^\/admin\/groups\/(\d+)\/members$/)) {
       await requireAdmin(request);
       const groupId = path.match(/^\/admin\/groups\/(\d+)\/members$/)[1];
       const members = await db.prepare(
-        `SELECT gm.*, u.name, u.email FROM group_members gm
-         JOIN users u ON gm.user_id = u.id WHERE gm.group_id = ?`
+        `SELECT gm.*, u.name, u.email FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = ?`
       ).bind(groupId).all();
       return json({ members: members.results });
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/members\/(\d+)\/ban$/)) {
       await requireAdmin(request);
-      const memberId = path.match(/^\/admin\/members\/(\d+)\/ban$/)[1];
-      await db.prepare('UPDATE group_members SET is_banned = 1 WHERE id = ?').bind(memberId).run();
-      return json({ message: 'User banned' });
+      await db.prepare('UPDATE group_members SET is_banned = 1 WHERE id = ?').bind(path.match(/^\/admin\/members\/(\d+)\/ban$/)[1]).run();
+      return json({ message: 'Banned' });
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/members\/(\d+)\/unban$/)) {
       await requireAdmin(request);
-      const memberId = path.match(/^\/admin\/members\/(\d+)\/unban$/)[1];
-      await db.prepare('UPDATE group_members SET is_banned = 0 WHERE id = ?').bind(memberId).run();
-      return json({ message: 'User unbanned' });
+      await db.prepare('UPDATE group_members SET is_banned = 0 WHERE id = ?').bind(path.match(/^\/admin\/members\/(\d+)\/unban$/)[1]).run();
+      return json({ message: 'Unbanned' });
     }
 
-    // Admin — Conversations
     if (method === 'POST' && path === '/admin/conversations') {
       const admin = await requireAdmin(request);
       const { user1_id, user2_id } = await request.json();
       if (!user1_id || !user2_id) return err('Both user IDs required');
-      if (user1_id === user2_id) return err('Cannot create conversation with same user');
-      
-      const a = Math.min(user1_id, user2_id);
-      const b = Math.max(user1_id, user2_id);
-      
-      await db.prepare(
-        'INSERT OR IGNORE INTO dm_rooms (user1_id, user2_id, created_by) VALUES (?, ?, ?)'
-      ).bind(a, b, admin.id).run();
-      
-      return json({ message: 'Conversation created' }, 201);
+      const a = Math.min(user1_id, user2_id), b = Math.max(user1_id, user2_id);
+      await db.prepare('INSERT OR IGNORE INTO dm_rooms (user1_id, user2_id, created_by) VALUES (?, ?, ?)').bind(a, b, admin.id).run();
+      return json({ message: 'Created' }, 201);
     }
 
     if (method === 'GET' && path === '/admin/conversations') {
       await requireAdmin(request);
       const dms = await db.prepare(
-        `SELECT d.*, u1.name as user1_name, u2.name as user2_name
-         FROM dm_rooms d
-         JOIN users u1 ON d.user1_id = u1.id
-         JOIN users u2 ON d.user2_id = u2.id
-         ORDER BY d.created_at DESC`
+        `SELECT d.*, u1.name as user1_name, u2.name as user2_name FROM dm_rooms d
+         JOIN users u1 ON d.user1_id = u1.id JOIN users u2 ON d.user2_id = u2.id ORDER BY d.created_at DESC`
       ).all();
       return json({ conversations: dms.results });
     }
 
     if (method === 'DELETE' && path.match(/^\/admin\/conversations\/(\d+)$/)) {
       await requireAdmin(request);
-      const roomId = path.match(/^\/admin\/conversations\/(\d+)$/)[1];
-      await db.prepare('DELETE FROM dm_messages WHERE dm_room_id = ?').bind(roomId).run();
-      await db.prepare('DELETE FROM dm_rooms WHERE id = ?').bind(roomId).run();
-      return json({ message: 'Conversation deleted' });
+      const id = path.match(/^\/admin\/conversations\/(\d+)$/)[1];
+      await db.prepare('DELETE FROM dm_messages WHERE dm_room_id = ?').bind(id).run();
+      await db.prepare('DELETE FROM dm_rooms WHERE id = ?').bind(id).run();
+      return json({ message: 'Deleted' });
     }
 
-    // Admin — Tasks
     if (method === 'POST' && path === '/admin/tasks') {
       await requireAdmin(request);
       const { group_id, title, description } = await request.json();
-      const result = await db.prepare(
-        'INSERT INTO daily_tasks (group_id, title, description) VALUES (?, ?, ?)'
-      ).bind(group_id, title, description || '').run();
-      return json({ id: result.meta.last_row_id }, 201);
+      await db.prepare('INSERT INTO daily_tasks (group_id, title, description) VALUES (?, ?, ?)').bind(group_id, title, description || '').run();
+      return json({ message: 'Added' }, 201);
     }
 
     if (method === 'DELETE' && path.match(/^\/admin\/tasks\/(\d+)$/)) {
       await requireAdmin(request);
-      const taskId = path.match(/^\/admin\/tasks\/(\d+)$/)[1];
-      await db.prepare('DELETE FROM task_completions WHERE task_id = ?').bind(taskId).run();
-      await db.prepare('DELETE FROM daily_tasks WHERE id = ?').bind(taskId).run();
-      return json({ message: 'Task deleted' });
+      const id = path.match(/^\/admin\/tasks\/(\d+)$/)[1];
+      await db.prepare('DELETE FROM task_completions WHERE task_id = ?').bind(id).run();
+      await db.prepare('DELETE FROM daily_tasks WHERE id = ?').bind(id).run();
+      return json({ message: 'Deleted' });
     }
 
-    // Admin — Resources
     if (method === 'GET' && path === '/admin/resources/pending') {
       await requireAdmin(request);
       const resources = await db.prepare(
-        `SELECT r.*, u.name as user_name FROM resources r
-         JOIN users u ON r.user_id = u.id WHERE r.is_approved = 0 ORDER BY r.created_at DESC`
+        `SELECT r.*, u.name as user_name FROM resources r JOIN users u ON r.user_id = u.id WHERE r.is_approved = 0 ORDER BY r.created_at DESC`
       ).all();
       return json({ resources: resources.results });
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/resources\/(\d+)\/approve$/)) {
       await requireAdmin(request);
-      const resId = path.match(/^\/admin\/resources\/(\d+)\/approve$/)[1];
-      await db.prepare('UPDATE resources SET is_approved = 1 WHERE id = ?').bind(resId).run();
-      return json({ message: 'Resource approved' });
+      await db.prepare('UPDATE resources SET is_approved = 1 WHERE id = ?').bind(path.match(/^\/admin\/resources\/(\d+)\/approve$/)[1]).run();
+      return json({ message: 'Approved' });
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/resources\/(\d+)\/reject$/)) {
       await requireAdmin(request);
-      const resId = path.match(/^\/admin\/resources\/(\d+)\/reject$/)[1];
-      const resource = await db.prepare('SELECT * FROM resources WHERE id = ?').bind(resId).first();
+      const id = path.match(/^\/admin\/resources\/(\d+)\/reject$/)[1];
+      const resource = await db.prepare('SELECT * FROM resources WHERE id = ?').bind(id).first();
       if (resource) {
-        // Refund diamonds
-        await db.prepare(
-          'UPDATE wallet SET diamonds = diamonds + 3 WHERE user_id = ? AND group_id = ?'
-        ).bind(resource.user_id, resource.group_id).run();
+        await db.prepare('UPDATE wallet SET diamonds = diamonds + 3 WHERE user_id = ? AND group_id = ?').bind(resource.user_id, resource.group_id).run();
       }
-      await db.prepare('DELETE FROM resources WHERE id = ?').bind(resId).run();
-      return json({ message: 'Resource rejected and refunded' });
+      await db.prepare('DELETE FROM resources WHERE id = ?').bind(id).run();
+      return json({ message: 'Rejected and refunded' });
     }
 
-    // Admin — AI Settings
     if (method === 'GET' && path.match(/^\/admin\/ai-settings\/(\d+)$/)) {
       await requireAdmin(request);
-      const groupId = path.match(/^\/admin\/ai-settings\/(\d+)$/)[1];
-      const settings = await db.prepare('SELECT * FROM ai_settings WHERE group_id = ?').bind(groupId).first();
+      const id = path.match(/^\/admin\/ai-settings\/(\d+)$/)[1];
+      const settings = await db.prepare('SELECT * FROM ai_settings WHERE group_id = ?').bind(id).first();
       return json({ settings: settings || { is_enabled: 0 } });
     }
 
     if (method === 'PUT' && path.match(/^\/admin\/ai-settings\/(\d+)$/)) {
       await requireAdmin(request);
-      const groupId = path.match(/^\/admin\/ai-settings\/(\d+)$/)[1];
+      const id = path.match(/^\/admin\/ai-settings\/(\d+)$/)[1];
       const { is_enabled, api_key, notification_hour, personality } = await request.json();
-      
-      const existing = await db.prepare('SELECT id FROM ai_settings WHERE group_id = ?').bind(groupId).first();
-      if (existing) {
+      const exists = await db.prepare('SELECT id FROM ai_settings WHERE group_id = ?').bind(id).first();
+      if (exists) {
         await db.prepare(
-          `UPDATE ai_settings SET is_enabled = ?, api_key = ?, notification_hour = ?, personality = ?, updated_at = datetime('now')
-           WHERE group_id = ?`
-        ).bind(is_enabled ? 1 : 0, api_key || null, notification_hour || 18, personality || 'motivational', groupId).run();
+          `UPDATE ai_settings SET is_enabled=?, api_key=?, notification_hour=?, personality=?, updated_at=datetime('now') WHERE group_id=?`
+        ).bind(is_enabled?1:0, api_key||null, notification_hour||18, personality||'motivational', id).run();
       } else {
         await db.prepare(
-          `INSERT INTO ai_settings (group_id, is_enabled, api_key, notification_hour, personality)
-           VALUES (?, ?, ?, ?, ?)`
-        ).bind(groupId, is_enabled ? 1 : 0, api_key || null, notification_hour || 18, personality || 'motivational').run();
+          `INSERT INTO ai_settings (group_id, is_enabled, api_key, notification_hour, personality) VALUES (?,?,?,?,?)`
+        ).bind(id, is_enabled?1:0, api_key||null, notification_hour||18, personality||'motivational').run();
       }
-      return json({ message: 'AI settings saved' });
+      return json({ message: 'Saved' });
     }
 
     return err('Not found', 404);
 
   } catch (e) {
-    console.error('API Error:', e);
+    console.error('API Error:', e.message, e.stack);
     if (e.status) return err(e.message, e.status);
-    return err('Internal server error', 500);
+    return err('Internal server error: ' + e.message, 500);
   }
 }
