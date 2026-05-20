@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dashboard | Alcove Messenger</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
+            --accent: #E94560; --accent-light: #FF6B81; --accent-glow: rgba(233,69,96,0.12);
+            --white: #EEEEEE; --gray: #8A8A9A; --gray2: #5A5A6A;
+            --text: #EEEEEE; --text-muted: #8A8A9A;
+            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+            --green: #4ADE80; --orange: #F59E0B;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2); --shadow-lg: 0 20px 48px rgba(0,0,0,0.4);
+            --radius: 12px; --radius-lg: 18px;
+        }
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .header {
+            background: var(--surface); border-bottom: 2px solid var(--accent);
+            height: 64px; display: flex; align-items: center; padding: 0 24px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon svg { width: 18px; height: 18px; color: white; }
+        .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--white); }
+        .logo-text span { color: var(--accent); }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 18px; font-weight: 600; font-size: 0.78rem; border-radius: 8px;
+            border: 2px solid transparent; cursor: pointer; transition: all 0.18s;
+            text-decoration: none; letter-spacing: 0.03em; white-space: nowrap;
+        }
+        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn-accent:hover { background: var(--accent-light); }
+        .btn-ghost { background: transparent; color: var(--white); border-color: var(--border2); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+        .btn-sm { padding: 6px 14px; font-size: 0.7rem; }
+
+        .main { flex: 1; padding: 28px 24px 60px; max-width: 900px; margin: 0 auto; width: 100%; }
+
+        .welcome-bar { margin-bottom: 24px; }
+        .welcome-bar h1 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--white); }
+        .welcome-bar p { color: var(--gray); font-size: 0.88rem; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 32px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+        .stat-icon { width: 32px; height: 32px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+        .stat-icon svg { width: 18px; height: 18px; }
+        .stat-icon.coin { color: #F59E0B; }
+        .stat-icon.diamond { color: #60A5FA; }
+        .stat-icon.streak { color: var(--accent); }
+        .stat-number { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--white); }
+        .stat-label { font-size: 0.68rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+        .section-title { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--white); margin-bottom: 14px; }
+
+        .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+        .card-item {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            text-decoration: none; color: var(--text); transition: all 0.2s;
+            gap: 12px;
+        }
+        .card-item:hover { border-color: var(--accent); background: rgba(233,69,96,0.05); }
+        .card-item-info { flex: 1; min-width: 0; }
+        .card-item-info h3 { font-size: 0.95rem; color: var(--white); margin-bottom: 2px; }
+        .card-item-info p { font-size: 0.75rem; color: var(--gray); }
+        .card-item-badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+        .badge-group { background: rgba(233,69,96,0.12); color: var(--accent); }
+        .badge-dm { background: rgba(96,165,250,0.12); color: #60A5FA; }
+        .card-item-arrow { color: var(--gray); flex-shrink: 0; }
+        .card-item-arrow svg { width: 16px; height: 16px; }
+
+        .join-card {
+            background: var(--surface); border: 2px dashed var(--border2);
+            border-radius: var(--radius); padding: 20px; text-align: center;
+            margin-bottom: 32px;
+        }
+        .join-card h3 { font-size: 0.95rem; color: var(--white); margin-bottom: 12px; }
+        .join-row { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; }
+        .join-input {
+            flex: 1; padding: 10px 14px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.85rem; outline: none;
+        }
+        .join-input:focus { border-color: var(--accent); }
+
+        .empty-state { text-align: center; padding: 24px; color: var(--gray); font-size: 0.85rem; }
+
+        .footer { background: var(--surface); border-top: 3px solid var(--accent); padding: 20px 24px; text-align: center; }
+        .footer p { font-size: 0.75rem; color: var(--gray2); }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
+            border-radius: 8px; font-weight: 500; font-size: 0.8rem;
+            z-index: 9999; opacity: 0; transform: translateY(10px);
+            transition: all 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-success { background: var(--green); color: #000; }
+        .toast-error { background: var(--accent); color: white; }
+
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid var(--border2);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state { text-align: center; padding: 40px; color: var(--gray); }
+
+        @media (max-width: 500px) {
+            .header-right .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                <span class="logo-text">Alcove <span>Messenger</span></span>
+            </a>
+            <div class="header-right">
+                <span class="hide-mobile" style="font-size:0.8rem;color:var(--gray);" id="navUserName"></span>
+                <a href="#" onclick="signOut(event)" class="btn btn-ghost btn-sm">Sign Out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="welcome-bar">
+            <h1 id="welcomeHeading">My Dashboard</h1>
+            <p>Your groups, conversations, and rewards</p>
+        </div>
+
+        <div class="stats-row" id="statsRow"></div>
+
+        <div class="join-card">
+            <h3>Join a Secret Group</h3>
+            <div class="join-row">
+                <input type="text" class="join-input" id="inviteCodeInput" placeholder="Enter invite code (e.g. ALC-XXXX)">
+                <button class="btn btn-accent" onclick="joinGroup()">Join</button>
+            </div>
+        </div>
+
+        <h3 class="section-title">My Groups</h3>
+        <div class="card-list" id="groupsList"><div class="loading-state"><div class="spinner"></div></div></div>
+
+        <h3 class="section-title">My Conversations</h3>
+        <div class="card-list" id="conversationsList"><div class="loading-state"><div class="spinner"></div></div></div>
+    </main>
+
+    <footer class="footer"><p>&copy; 2026 Alcove Messenger. All rights reserved.</p></footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var API_BASE = '/api';
+        function esc(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+        function getToken() { return localStorage.getItem('alcove_token') || ''; }
+        function getUser() { try { return JSON.parse(localStorage.getItem('alcove_user') || 'null'); } catch(e) { return null; } }
+        function signOut(e) { e.preventDefault(); localStorage.removeItem('alcove_token'); localStorage.removeItem('alcove_user'); window.location.href = '/'; }
+        function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast toast-' + (type||'success') + ' show'; setTimeout(function(){t.classList.remove('show');}, 2500); }
+
+        async function api(method, path, body) {
+            var opts = { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
+            if (body) opts.body = JSON.stringify(body);
+            var res = await fetch(API_BASE + path, opts);
+            var data = await res.json();
+            if (res.status === 401) { signOut(new Event('click')); return { ok: false }; }
+            return { ok: res.ok, data: data };
+        }
+
+        async function joinGroup() {
+            var code = document.getElementById('inviteCodeInput').value.trim();
+            if (!code) { showToast('Enter an invite code', 'error'); return; }
+            var res = await api('POST', '/groups/join', { invite_code: code });
+            if (res.ok) {
+                showToast('Joined group: ' + res.data.group.name);
+                document.getElementById('inviteCodeInput').value = '';
+                loadDashboard();
+            } else {
+                showToast(res.data.error || 'Invalid code', 'error');
+            }
+        }
+
+        async function loadDashboard() {
+            var user = getUser();
+            if (!user) { window.location.href = '/index.html'; return; }
+            document.getElementById('welcomeHeading').textContent = 'Welcome, ' + (user.name || 'User');
+            document.getElementById('navUserName').textContent = user.name || '';
+
+            // Load groups
+            var groupsRes = await api('GET', '/groups');
+            var groups = groupsRes.ok ? (groupsRes.data.groups || []) : [];
+            var groupsHTML = '';
+            
+            if (groups.length === 0) {
+                groupsHTML = '<div class="empty-state">No groups yet. Join one using an invite code above.</div>';
+            } else {
+                var totalCoins = 0, totalDiamonds = 0, maxStreak = 0;
+                
+                for (var g of groups) {
+                    var walletRes = await api('GET', '/wallet/' + g.id);
+                    var wallet = walletRes.ok ? (walletRes.data.wallet || {}) : {};
+                    totalCoins += wallet.coins || 0;
+                    totalDiamonds += wallet.diamonds || 0;
+                    if ((wallet.current_streak || 0) > maxStreak) maxStreak = wallet.current_streak || 0;
+                    
+                    groupsHTML += '<a href="/group.html?id=' + g.id + '" class="card-item">' +
+                        '<div class="card-item-info"><h3>' + esc(g.name) + '</h3><p>' + esc(g.description || '') + '</p></div>' +
+                        '<span class="card-item-badge badge-group">Group</span>' +
+                        '<span class="card-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>' +
+                    '</a>';
+                }
+                
+                document.getElementById('statsRow').innerHTML =
+                    '<div class="stat-card"><div class="stat-icon coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-number">' + totalCoins + '</div><div class="stat-label">Total Coins</div></div>' +
+                    '<div class="stat-card"><div class="stat-icon diamond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/><line x1="12" y1="15" x2="12" y2="22"/></svg></div><div class="stat-number">' + totalDiamonds + '</div><div class="stat-label">Diamonds</div></div>' +
+                    '<div class="stat-card"><div class="stat-icon streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="stat-number">' + maxStreak + '</div><div class="stat-label">Best Streak</div></div>';
+            }
+            document.getElementById('groupsList').innerHTML = groupsHTML;
+
+            // Load conversations
+            var convsRes = await api('GET', '/conversations');
+            var convs = convsRes.ok ? (convsRes.data.conversations || []) : [];
+            var convsHTML = '';
+            
+            if (convs.length === 0) {
+                convsHTML = '<div class="empty-state">No conversations yet. An admin will create one for you.</div>';
+            } else {
+                convsHTML = convs.map(function(c) {
+                    var otherName = c.user1_id === user.id ? c.user2_name : c.user1_name;
+                    return '<a href="/dm.html?id=' + c.id + '" class="card-item">' +
+                        '<div class="card-item-info"><h3>Chat with ' + esc(otherName) + '</h3><p>Admin-managed conversation</p></div>' +
+                        '<span class="card-item-badge badge-dm">DM</span>' +
+                        '<span class="card-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>' +
+                    '</a>';
+                }).join('');
+            }
+            document.getElementById('conversationsList').innerHTML = convsHTML;
+        }
+
+        document.getElementById('inviteCodeInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') joinGroup();
+        });
+
+        loadDashboard();
+    </script>
+</body>
+</html>
