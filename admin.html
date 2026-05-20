@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin Panel | Alcove Messenger</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
+            --accent: #E94560; --accent-light: #FF6B81; --accent-glow: rgba(233,69,96,0.12);
+            --white: #EEEEEE; --gray: #8A8A9A; --gray2: #5A5A6A;
+            --text: #EEEEEE; --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+            --green: #4ADE80; --orange: #F59E0B; --blue: #60A5FA;
+            --radius: 10px; --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; min-height: 100vh; display: flex;
+        }
+        .sidebar {
+            width: 200px; background: var(--surface); border-right: 1px solid var(--border);
+            padding: 16px 12px; display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; overflow-y: auto;
+        }
+        .sidebar-logo { display: flex; align-items: center; gap: 8px; padding: 8px; margin-bottom: 20px; text-decoration: none; }
+        .sidebar-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .sidebar-logo-icon svg { width: 16px; height: 16px; color: white; }
+        .sidebar-logo span { font-family: 'DM Serif Display', serif; font-size: 0.9rem; color: var(--white); }
+        .sidebar-nav { list-style: none; flex: 1; }
+        .sidebar-nav li { margin-bottom: 2px; }
+        .sidebar-nav a {
+            display: block; padding: 9px 12px; border-radius: 8px;
+            color: var(--gray); text-decoration: none; font-size: 0.78rem;
+            font-weight: 500; cursor: pointer; transition: all 0.15s;
+        }
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+        .sidebar-nav a.active { background: var(--accent-glow); color: var(--accent); font-weight: 600; }
+        .sidebar-footer { border-top: 1px solid var(--border); padding-top: 12px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+            padding: 7px 14px; font-weight: 600; font-size: 0.7rem; border-radius: 7px;
+            border: 1px solid transparent; cursor: pointer; transition: all 0.15s;
+            text-decoration: none; letter-spacing: 0.03em; white-space: nowrap;
+        }
+        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn-accent:hover { background: var(--accent-light); }
+        .btn-ghost { background: transparent; color: var(--gray); border-color: var(--border2); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.04); color: white; }
+        .btn-danger { background: transparent; color: var(--accent); border-color: rgba(233,69,96,0.2); }
+        .btn-danger:hover { background: rgba(233,69,96,0.1); }
+        .btn-sm { padding: 4px 10px; font-size: 0.62rem; }
+
+        .main-area { flex: 1; margin-left: 200px; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 12px 20px; display: flex; justify-content: space-between;
+            align-items: center; position: sticky; top: 0; z-index: 100;
+        }
+        .topbar h2 { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--white); }
+        .content { padding: 20px; flex: 1; }
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+        .card h3 { font-family: 'DM Serif Display', serif; font-size: 0.95rem; color: var(--white); margin-bottom: 12px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--gray); font-weight: 600; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--gray); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.62rem; font-weight: 600; }
+        .badge-green { background: rgba(74,222,128,0.12); color: var(--green); }
+        .badge-red { background: rgba(233,69,96,0.12); color: var(--accent); }
+        .badge-orange { background: rgba(245,158,11,0.12); color: var(--orange); }
+        .badge-blue { background: rgba(96,165,250,0.12); color: var(--blue); }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.68rem; color: var(--gray); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 8px 12px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 7px;
+            color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.78rem; outline: none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+        .form-textarea { min-height: 70px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 500; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--surface); border: 1px solid var(--border2);
+            border-radius: 14px; padding: 20px; max-width: 480px; width: 92%; max-height: 80vh; overflow-y: auto;
+        }
+        .modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--white); margin-bottom: 14px; }
+        .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
+            border-radius: 8px; font-weight: 500; font-size: 0.78rem;
+            z-index: 9999; opacity: 0; transform: translateY(10px);
+            transition: all 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-success { background: var(--green); color: #000; }
+        .toast-error { background: var(--accent); color: white; }
+
+        .loading-text { text-align: center; padding: 30px; color: var(--gray); }
+        @media (max-width: 700px) { .sidebar { width: 160px; } .main-area { margin-left: 160px; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <a href="/" class="sidebar-logo">
+            <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <span>Alcove</span>
+        </a>
+        <ul class="sidebar-nav" id="sidebarNav"></ul>
+        <div class="sidebar-footer">
+            <a href="/dashboard.html" class="btn btn-ghost" style="width:100%;margin-bottom:6px;">Dashboard</a>
+            <a href="#" onclick="signOut(event)" class="btn btn-danger" style="width:100%;">Sign Out</a>
+        </div>
+    </aside>
+
+    <div class="main-area">
+        <div class="topbar"><h2 id="viewTitle">Groups</h2></div>
+        <div class="content">
+            <div class="view active" id="view-groups">
+                <button class="btn btn-accent" onclick="openCreateGroup()" style="margin-bottom:12px;">+ Create Group</button>
+                <div class="card"><h3>All Groups</h3><div id="groupsTable"></div></div>
+            </div>
+            <div class="view" id="view-conversations">
+                <button class="btn btn-accent" onclick="openCreateConversation()" style="margin-bottom:12px;">+ Create Conversation</button>
+                <div class="card"><h3>All Conversations</h3><div id="conversationsTable"></div></div>
+            </div>
+            <div class="view" id="view-resources">
+                <div class="card"><h3>Pending Resources</h3><div id="resourcesTable"></div></div>
+            </div>
+            <div class="view" id="view-members">
+                <div class="form-group" style="margin-bottom:16px;"><label>Select Group</label><select class="form-select" id="memberGroupSelect" onchange="loadMembers()"></select></div>
+                <div class="card"><h3>Members</h3><div id="membersTable"></div></div>
+            </div>
+            <div class="view" id="view-tasks">
+                <div class="form-group" style="margin-bottom:16px;"><label>Select Group</label><select class="form-select" id="taskGroupSelect" onchange="loadTasksAdmin()"></select></div>
+                <button class="btn btn-accent" onclick="openAddTask()" style="margin-bottom:12px;">+ Add Task</button>
+                <div class="card"><h3>Daily Tasks</h3><div id="tasksAdminTable"></div></div>
+            </div>
+            <div class="view" id="view-ai">
+                <div class="form-group" style="margin-bottom:16px;"><label>Select Group</label><select class="form-select" id="aiGroupSelect" onchange="loadAISettings()"></select></div>
+                <div class="card"><h3>AI Settings</h3><div id="aiSettingsForm"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal" id="modalContent"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var API_BASE = '/api';
+        var currentView = 'groups';
+
+        function esc(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+        function getToken() { return localStorage.getItem('alcove_token') || ''; }
+        function getUser() { try { return JSON.parse(localStorage.getItem('alcove_user') || 'null'); } catch(e) { return null; } }
+        function signOut(e) { e.preventDefault(); localStorage.clear(); window.location.href = '/'; }
+        function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast toast-' + (type||'success') + ' show'; setTimeout(function(){t.classList.remove('show');}, 2200); }
+
+        async function api(method, path, body) {
+            var opts = { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
+            if (body) opts.body = JSON.stringify(body);
+            var res = await fetch(API_BASE + path, opts);
+            var data = await res.json();
+            if (res.status === 401 || res.status === 403) { window.location.href = '/index.html'; return { ok: false }; }
+            return { ok: res.ok, data: data };
+        }
+
+        function showView(name) {
+            currentView = name;
+            document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+            document.getElementById('view-' + name).classList.add('active');
+            document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('active');});
+            document.querySelector('[data-nav="' + name + '"]').classList.add('active');
+            var titles = { groups:'Groups', conversations:'Conversations', resources:'Resources', members:'Members', tasks:'Tasks', ai:'AI Settings' };
+            document.getElementById('viewTitle').textContent = titles[name] || name;
+            if (name === 'groups') loadGroups();
+            if (name === 'conversations') loadConversations();
+            if (name === 'resources') loadPendingResources();
+            if (name === 'members') loadGroupSelects();
+            if (name === 'tasks') loadGroupSelects();
+            if (name === 'ai') loadGroupSelects();
+        }
+
+        function openModal(title, body, footer) {
+            document.getElementById('modalContent').innerHTML = '<h3>' + title + '</h3>' + body + (footer ? '<div class="modal-footer">' + footer + '</div>' : '');
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+        async function loadGroupSelects() {
+            var res = await api('GET', '/admin/groups');
+            if (res.ok && res.data.groups) {
+                var opts = res.data.groups.map(function(g){return '<option value="'+g.id+'">'+esc(g.name)+'</option>';}).join('');
+                ['memberGroupSelect','taskGroupSelect','aiGroupSelect'].forEach(function(id){
+                    var el = document.getElementById(id); if (el) el.innerHTML = '<option value="">Select...</option>' + opts;
+                });
+            }
+        }
+
+        // ── GROUPS ──
+        async function loadGroups() {
+            var res = await api('GET', '/admin/groups');
+            if (res.ok && res.data.groups) {
+                document.getElementById('groupsTable').innerHTML = '<table><thead><tr><th>Name</th><th>Code</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+                    res.data.groups.map(function(g){return '<tr><td>'+esc(g.name)+'</td><td>'+esc(g.invite_code)+'</td><td>'+(g.is_active?'<span class="badge badge-green">Active</span>':'<span class="badge badge-red">Closed</span>')+'</td><td>'+
+                        '<button class="btn btn-ghost btn-sm" onclick="toggleGroup('+g.id+','+(g.is_active?0:1)+')">'+(g.is_active?'Close':'Resume')+'</button> '+
+                        '<button class="btn btn-danger btn-sm" onclick="deleteGroup('+g.id+')">Del</button></td></tr>';}).join('')+'</tbody></table>';
+            }
+        }
+        function openCreateGroup() {
+            openModal('Create Group',
+                '<div class="form-group"><label>Name</label><input class="form-input" id="gName"></div><div class="form-group"><label>Description</label><textarea class="form-textarea" id="gDesc"></textarea></div>',
+                '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-accent" id="saveGroupBtn">Create</button>');
+            document.getElementById('saveGroupBtn').onclick = async function(){
+                var res = await api('POST','/admin/groups',{name:document.getElementById('gName').value,description:document.getElementById('gDesc').value});
+                if(res.ok){closeModal();showToast('Created! Code: '+res.data.invite_code,'success');loadGroups();}
+            };
+        }
+        async function toggleGroup(id, active) { await api('PUT','/admin/groups/'+id,{is_active:active}); showToast(active?'Activated':'Closed','success'); loadGroups(); }
+        async function deleteGroup(id) { if(!confirm('Delete group and ALL data?'))return; await api('DELETE','/admin/groups/'+id); showToast('Deleted','success'); loadGroups(); }
+
+        // ── CONVERSATIONS ──
+        async function loadConversations() {
+            var res = await api('GET', '/admin/conversations');
+            if (res.ok && res.data.conversations) {
+                document.getElementById('conversationsTable').innerHTML = '<table><thead><tr><th>User 1</th><th>User 2</th><th>Active</th><th>Actions</th></tr></thead><tbody>' +
+                    res.data.conversations.map(function(c){return '<tr><td>'+esc(c.user1_name)+'</td><td>'+esc(c.user2_name)+'</td><td>'+(c.is_active?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-red">No</span>')+'</td><td>'+
+                        '<button class="btn btn-danger btn-sm" onclick="deleteConversation('+c.id+')">Del</button></td></tr>';}).join('')+'</tbody></table>';
+            }
+        }
+        function openCreateConversation() {
+            openModal('Create Conversation',
+                '<div class="form-group"><label>User 1 ID</label><input class="form-input" id="u1" type="number"></div><div class="form-group"><label>User 2 ID</label><input class="form-input" id="u2" type="number"></div>',
+                '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-accent" id="saveConvBtn">Create</button>');
+            document.getElementById('saveConvBtn').onclick = async function(){
+                var res = await api('POST','/admin/conversations',{user1_id:parseInt(document.getElementById('u1').value),user2_id:parseInt(document.getElementById('u2').value)});
+                if(res.ok){closeModal();showToast('Created','success');loadConversations();}
+            };
+        }
+        async function deleteConversation(id) { if(!confirm('Delete?'))return; await api('DELETE','/admin/conversations/'+id); showToast('Deleted','success'); loadConversations(); }
+
+        // ── RESOURCES ──
+        async function loadPendingResources() {
+            var res = await api('GET', '/admin/resources/pending');
+            if (res.ok && res.data.resources) {
+                document.getElementById('resourcesTable').innerHTML = '<table><thead><tr><th>Title</th><th>By</th><th>Type</th><th>Actions</th></tr></thead><tbody>' +
+                    res.data.resources.map(function(r){return '<tr><td>'+esc(r.title)+'</td><td>'+esc(r.user_name)+'</td><td>'+esc(r.type)+'</td><td>'+
+                        '<button class="btn btn-accent btn-sm" onclick="approveResource('+r.id+')">Approve</button> '+
+                        '<button class="btn btn-danger btn-sm" onclick="rejectResource('+r.id+')">Reject</button></td></tr>';}).join('')+'</tbody></table>';
+            }
+        }
+        async function approveResource(id) { await api('PUT','/admin/resources/'+id+'/approve'); showToast('Approved','success'); loadPendingResources(); }
+        async function rejectResource(id) { await api('PUT','/admin/resources/'+id+'/reject'); showToast('Rejected (refunded)','success'); loadPendingResources(); }
+
+        // ── MEMBERS ──
+        async function loadMembers() {
+            var groupId = document.getElementById('memberGroupSelect').value;
+            if (!groupId) { document.getElementById('membersTable').innerHTML = '<p style="color:var(--gray);">Select a group.</p>'; return; }
+            var res = await api('GET', '/admin/groups/' + groupId + '/members');
+            if (res.ok && res.data.members) {
+                document.getElementById('membersTable').innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+                    res.data.members.map(function(m){return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.email)+'</td><td>'+(m.is_banned?'<span class="badge badge-red">Banned</span>':'<span class="badge badge-green">Active</span>')+'</td><td>'+
+                        (m.is_banned?'<button class="btn btn-accent btn-sm" onclick="unbanMember('+m.id+')">Unban</button>':'<button class="btn btn-danger btn-sm" onclick="banMember('+m.id+')">Ban</button>')+'</td></tr>';}).join('')+'</tbody></table>';
+            }
+        }
+        async function banMember(id) { await api('PUT','/admin/members/'+id+'/ban'); showToast('Banned','success'); loadMembers(); }
+        async function unbanMember(id) { await api('PUT','/admin/members/'+id+'/unban'); showToast('Unbanned','success'); loadMembers(); }
+
+        // ── TASKS ──
+        async function loadTasksAdmin() {
+            var groupId = document.getElementById('taskGroupSelect').value;
+            if (!groupId) { document.getElementById('tasksAdminTable').innerHTML = '<p style="color:var(--gray);">Select a group.</p>'; return; }
+            var res = await api('GET', '/groups/' + groupId + '/tasks');
+            if (res.ok && res.data.tasks) {
+                document.getElementById('tasksAdminTable').innerHTML = '<table><thead><tr><th>Title</th><th>Description</th><th>Actions</th></tr></thead><tbody>' +
+                    res.data.tasks.map(function(t){return '<tr><td>'+esc(t.title)+'</td><td>'+esc(t.description||'')+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteTask('+t.id+')">Del</button></td></tr>';}).join('')+'</tbody></table>';
+            }
+        }
+        function openAddTask() {
+            var groupId = document.getElementById('taskGroupSelect').value;
+            if (!groupId) { showToast('Select a group first','error'); return; }
+            openModal('Add Task',
+                '<div class="form-group"><label>Title</label><input class="form-input" id="tTitle"></div><div class="form-group"><label>Description</label><textarea class="form-textarea" id="tDesc"></textarea></div>',
+                '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-accent" id="saveTaskBtn">Add</button>');
+            document.getElementById('saveTaskBtn').onclick = async function(){
+                var res = await api('POST','/admin/tasks',{group_id:parseInt(groupId),title:document.getElementById('tTitle').value,description:document.getElementById('tDesc').value});
+                if(res.ok){closeModal();showToast('Added','success');loadTasksAdmin();}
+            };
+        }
+        async function deleteTask(id) { if(!confirm('Delete?'))return; await api('DELETE','/admin/tasks/'+id); showToast('Deleted','success'); loadTasksAdmin(); }
+
+        // ── AI SETTINGS ──
+        async function loadAISettings() {
+            var groupId = document.getElementById('aiGroupSelect').value;
+            if (!groupId) { document.getElementById('aiSettingsForm').innerHTML = '<p style="color:var(--gray);">Select a group.</p>'; return; }
+            var res = await api('GET', '/admin/ai-settings/' + groupId);
+            var s = res.ok ? (res.data.settings || {}) : {};
+            document.getElementById('aiSettingsForm').innerHTML =
+                '<div class="form-group"><label>Enable AI Notifications</label><select class="form-select" id="aiEnabled"><option value="1" '+(s.is_enabled?'selected':'')+'>ON</option><option value="0" '+(s.is_enabled?'':'selected')+'>OFF</option></select></div>'+
+                '<div class="form-group"><label>API Key</label><input class="form-input" id="aiKey" value="'+esc(s.api_key||'')+'" placeholder="sk-or-v1-..."></div>'+
+                '<div class="form-group"><label>Notification Hour (0-23)</label><input class="form-input" id="aiHour" type="number" min="0" max="23" value="'+(s.notification_hour||18)+'"></div>'+
+                '<div class="form-group"><label>Personality</label><select class="form-select" id="aiPersonality"><option value="motivational" '+(s.personality==='motivational'?'selected':'')+'>Motivational</option><option value="strict" '+(s.personality==='strict'?'selected':'')+'>Strict</option><option value="friendly" '+(s.personality==='friendly'?'selected':'')+'>Friendly</option></select></div>'+
+                '<button class="btn btn-accent" onclick="saveAISettings('+groupId+')">Save AI Settings</button>';
+        }
+        async function saveAISettings(groupId) {
+            var res = await api('PUT', '/admin/ai-settings/' + groupId, {
+                is_enabled: document.getElementById('aiEnabled').value === '1' ? 1 : 0,
+                api_key: document.getElementById('aiKey').value,
+                notification_hour: parseInt(document.getElementById('aiHour').value),
+                personality: document.getElementById('aiPersonality').value
+            });
+            if (res.ok) showToast('AI settings saved', 'success');
+        }
+
+        // ── INIT ──
+        function buildSidebar() {
+            var nav = document.getElementById('sidebarNav');
+            var items = [
+                { name: 'groups', label: 'Groups' },
+                { name: 'conversations', label: 'Conversations' },
+                { name: 'resources', label: 'Resources' },
+                { name: 'members', label: 'Members' },
+                { name: 'tasks', label: 'Tasks' },
+                { name: 'ai', label: 'AI Settings' }
+            ];
+            nav.innerHTML = items.map(function(item) {
+                return '<li><a data-nav="' + item.name + '" onclick="showView(\'' + item.name + '\')" class="' + (item.name === 'groups' ? 'active' : '') + '">' + item.label + '</a></li>';
+            }).join('');
+        }
+
+        (function init() {
+            var user = getUser();
+            if (!user || user.role !== 'admin') { window.location.href = '/index.html'; return; }
+            buildSidebar();
+            loadGroups();
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+        })();
+    </script>
+</body>
+</html>
