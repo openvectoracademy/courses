@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Group | Alcove Messenger</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
+            --accent: #E94560; --accent-light: #FF6B81; --accent-glow: rgba(233,69,96,0.12);
+            --white: #EEEEEE; --gray: #8A8A9A; --gray2: #5A5A6A;
+            --text: #EEEEEE; --text-muted: #8A8A9A;
+            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+            --green: #4ADE80; --orange: #F59E0B; --blue: #60A5FA;
+            --radius: 10px; --radius-lg: 16px;
+        }
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; height: 100vh;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .header {
+            background: var(--surface); border-bottom: 2px solid var(--accent);
+            height: 56px; display: flex; align-items: center; padding: 0 16px; flex-shrink: 0;
+        }
+        .header-inner { display: flex; align-items: center; gap: 12px; width: 100%; }
+        .back-btn {
+            background: none; border: none; color: var(--gray); cursor: pointer;
+            padding: 6px; display: flex; align-items: center; transition: color 0.15s;
+        }
+        .back-btn:hover { color: var(--white); }
+        .back-btn svg { width: 18px; height: 18px; }
+        .header-info { flex: 1; min-width: 0; }
+        .header-info h2 { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-info p { font-size: 0.7rem; color: var(--gray); }
+
+        .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface); }
+        .tab-btn {
+            flex: 1; padding: 10px; background: none; border: none; color: var(--gray);
+            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.75rem;
+            cursor: pointer; transition: all 0.15s; border-bottom: 2px solid transparent;
+            letter-spacing: 0.03em; text-transform: uppercase;
+        }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-btn:hover { color: var(--white); }
+
+        .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+        .tab-content.active { display: flex; }
+
+        /* CHAT TAB */
+        .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 80%; padding: 8px 14px; border-radius: 12px; font-size: 0.82rem; line-height: 1.45; word-wrap: break-word; }
+        .msg.mine { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.other { background: var(--surface2); color: var(--white); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg .sender { font-size: 0.65rem; font-weight: 600; margin-bottom: 2px; opacity: 0.7; }
+        .msg .time { font-size: 0.6rem; opacity: 0.5; margin-top: 4px; text-align: right; }
+        .chat-input-area { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+        .chat-input {
+            flex: 1; padding: 9px 14px; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 20px; color: var(--white); font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem; outline: none;
+        }
+        .chat-input:focus { border-color: var(--accent); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 16px; font-weight: 600; font-size: 0.75rem; border-radius: 20px;
+            border: 2px solid transparent; cursor: pointer; transition: all 0.18s;
+            text-decoration: none; letter-spacing: 0.03em; white-space: nowrap;
+        }
+        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn-accent:hover { background: var(--accent-light); }
+        .btn-ghost { background: transparent; color: var(--white); border-color: var(--border2); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); }
+
+        /* TASKS TAB */
+        .tasks-list { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .task-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); transition: all 0.2s;
+        }
+        .task-item.done { opacity: 0.5; }
+        .task-check {
+            width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border2);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+        }
+        .task-check:hover { border-color: var(--accent); }
+        .task-check.checked { background: var(--green); border-color: var(--green); }
+        .task-check.checked svg { color: #000; width: 12px; height: 12px; }
+        .task-check svg { display: none; }
+        .task-check.checked svg { display: block; }
+        .task-info { flex: 1; }
+        .task-info h4 { font-size: 0.85rem; color: var(--white); }
+        .task-info p { font-size: 0.7rem; color: var(--gray); }
+        .complete-all-bar { padding: 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; text-align: center; }
+        .reward-msg { font-size: 0.75rem; color: var(--gray); margin-top: 6px; }
+
+        /* RESOURCES TAB */
+        .resources-list { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .resource-item {
+            padding: 14px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); display: flex; align-items: center; gap: 12px;
+        }
+        .resource-icon {
+            width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; font-size: 0.75rem; font-weight: 700;
+        }
+        .resource-icon.pdf { background: rgba(233,69,96,0.15); color: var(--accent); }
+        .resource-icon.link { background: rgba(96,165,250,0.15); color: var(--blue); }
+        .resource-icon.image { background: rgba(74,222,128,0.15); color: var(--green); }
+        .resource-icon.text { background: rgba(245,158,11,0.15); color: var(--orange); }
+        .resource-info { flex: 1; min-width: 0; }
+        .resource-info h4 { font-size: 0.85rem; color: var(--white); }
+        .resource-info p { font-size: 0.7rem; color: var(--gray); }
+        .resource-info a { color: var(--accent); text-decoration: none; font-size: 0.75rem; }
+        .resource-info a:hover { text-decoration: underline; }
+        .post-resource-bar { padding: 14px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+        .post-resource-bar .cost { font-size: 0.7rem; color: var(--gray); margin-top: 6px; text-align: center; }
+
+        .wallet-bar {
+            display: flex; gap: 16px; padding: 8px 14px; background: var(--surface2);
+            border-bottom: 1px solid var(--border); flex-shrink: 0; justify-content: center;
+        }
+        .wallet-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; }
+        .wallet-item.coin { color: var(--orange); }
+        .wallet-item.diamond { color: var(--blue); }
+        .wallet-item.streak { color: var(--accent); }
+        .wallet-item svg { width: 14px; height: 14px; }
+
+        .empty-state { text-align: center; padding: 32px 14px; color: var(--gray); font-size: 0.82rem; }
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
+            border-radius: 8px; font-weight: 500; font-size: 0.8rem;
+            z-index: 9999; opacity: 0; transform: translateY(10px);
+            transition: all 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-success { background: var(--green); color: #000; }
+        .toast-error { background: var(--accent); color: white; }
+        .spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 500px) { .header-info h2 { font-size: 0.9rem; } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <a href="/dashboard.html" class="back-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <div class="header-info"><h2 id="groupName">Loading...</h2><p id="groupMeta"></p></div>
+        </div>
+    </header>
+
+    <div class="wallet-bar" id="walletBar">
+        <span class="wallet-item coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg> <span id="walletCoins">0</span></span>
+        <span class="wallet-item diamond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/></svg> <span id="walletDiamonds">0</span></span>
+        <span class="wallet-item streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> <span id="walletStreak">0</span></span>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('chat')">Chat</button>
+        <button class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('resources')">Resources</button>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-content active" id="tab-chat">
+        <div class="chat-messages" id="chatMessages"><div class="empty-state">Loading messages...</div></div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()">
+            <button class="btn btn-accent" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- TASKS TAB -->
+    <div class="tab-content" id="tab-tasks">
+        <div class="tasks-list" id="tasksList"><div class="empty-state">Loading tasks...</div></div>
+        <div class="complete-all-bar">
+            <button class="btn btn-accent" onclick="completeAllTasks()">All Done — Claim Reward</button>
+            <div class="reward-msg" id="rewardMsg"></div>
+        </div>
+    </div>
+
+    <!-- RESOURCES TAB -->
+    <div class="tab-content" id="tab-resources">
+        <div class="resources-list" id="resourcesList"><div class="empty-state">Loading resources...</div></div>
+        <div class="post-resource-bar">
+            <button class="btn btn-accent" onclick="showPostResource()" style="width:100%;">Post Resource (Cost: 3 Diamonds)</button>
+            <div class="cost" id="resourceCostMsg"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var API_BASE = '/api';
+        var groupId = new URLSearchParams(window.location.search).get('id');
+        var currentTab = 'chat';
+        var pollInterval;
+
+        function esc(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+        function getToken() { return localStorage.getItem('alcove_token') || ''; }
+        function getUser() { try { return JSON.parse(localStorage.getItem('alcove_user') || 'null'); } catch(e) { return null; } }
+        function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast toast-' + (type||'success') + ' show'; setTimeout(function(){t.classList.remove('show');}, 2500); }
+
+        async function api(method, path, body) {
+            var opts = { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
+            if (body) opts.body = JSON.stringify(body);
+            var res = await fetch(API_BASE + path, opts);
+            var data = await res.json();
+            if (res.status === 401) { window.location.href = '/index.html'; return { ok: false }; }
+            return { ok: res.ok, data: data };
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(function(b) { if (b.textContent.toLowerCase().includes(tab)) b.classList.add('active'); });
+            if (tab === 'chat') loadMessages();
+            if (tab === 'tasks') loadTasks();
+            if (tab === 'resources') loadResources();
+        }
+
+        function formatTime(ds) {
+            if (!ds) return '';
+            var d = new Date(ds + 'Z');
+            var now = new Date();
+            if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ── CHAT ──
+        async function loadMessages() {
+            var container = document.getElementById('chatMessages');
+            var res = await api('GET', '/groups/' + groupId + '/messages');
+            var user = getUser();
+            if (res.ok && res.data.messages) {
+                if (res.data.messages.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No messages yet. Start the conversation!</div>';
+                } else {
+                    container.innerHTML = res.data.messages.map(function(m) {
+                        var isMine = m.user_id === user.id;
+                        return '<div class="msg ' + (isMine ? 'mine' : 'other') + '">' +
+                            (!isMine ? '<div class="sender">' + esc(m.user_name || 'Unknown') + '</div>' : '') +
+                            '<div>' + esc(m.message) + '</div>' +
+                            '<div class="time">' + formatTime(m.created_at) + '</div>' +
+                        '</div>';
+                    }).join('');
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+        }
+
+        async function sendMessage() {
+            var input = document.getElementById('chatInput');
+            var msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+            var res = await api('POST', '/groups/' + groupId + '/send', { message: msg });
+            if (res.ok) loadMessages();
+        }
+
+        // ── TASKS ──
+        async function loadTasks() {
+            var container = document.getElementById('tasksList');
+            var res = await api('GET', '/groups/' + groupId + '/tasks');
+            if (res.ok && res.data.tasks) {
+                if (res.data.tasks.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No tasks assigned yet.</div>';
+                } else {
+                    var allDone = res.data.tasks.every(function(t) { return t.completed; });
+                    container.innerHTML = res.data.tasks.map(function(t) {
+                        return '<div class="task-item' + (t.completed ? ' done' : '') + '">' +
+                            '<div class="task-check' + (t.completed ? ' checked' : '') + '" onclick="toggleTask(' + t.id + ', ' + t.completed + ')">' +
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' +
+                            '</div>' +
+                            '<div class="task-info"><h4>' + esc(t.title) + '</h4>' + (t.description ? '<p>' + esc(t.description) + '</p>' : '') + '</div>' +
+                        '</div>';
+                    }).join('');
+                    
+                    if (allDone) {
+                        document.getElementById('rewardMsg').textContent = 'All tasks completed for today! Come back tomorrow.';
+                    } else {
+                        document.getElementById('rewardMsg').textContent = '';
+                    }
+                }
+            }
+        }
+
+        async function toggleTask(taskId, currentlyDone) {
+            if (currentlyDone) return;
+            await api('POST', '/tasks/complete', { group_id: parseInt(groupId), task_id: taskId });
+            loadTasks();
+        }
+
+        async function completeAllTasks() {
+            var res = await api('POST', '/tasks/complete-all', { group_id: parseInt(groupId) });
+            if (res.ok) {
+                var d = res.data;
+                document.getElementById('rewardMsg').textContent = 'Earned: ' + d.coins_earned + ' coins' + (d.diamonds_earned > 0 ? ' + ' + d.diamonds_earned + ' diamonds' : '') + ' | Streak: ' + d.streak + ' days';
+                showToast('Reward claimed!', 'success');
+                loadTasks();
+                loadWallet();
+            } else {
+                showToast(res.data.error || 'Error', 'error');
+            }
+        }
+
+        // ── RESOURCES ──
+        async function loadResources() {
+            var container = document.getElementById('resourcesList');
+            var res = await api('GET', '/groups/' + groupId + '/resources');
+            if (res.ok && res.data.resources) {
+                if (res.data.resources.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No resources shared yet.</div>';
+                } else {
+                    container.innerHTML = res.data.resources.map(function(r) {
+                        var typeClass = r.type === 'pdf' ? 'pdf' : r.type === 'link' ? 'link' : r.type === 'image' ? 'image' : 'text';
+                        var typeLabel = r.type === 'pdf' ? 'PDF' : r.type === 'link' ? 'URL' : r.type === 'image' ? 'IMG' : 'TXT';
+                        return '<div class="resource-item">' +
+                            '<div class="resource-icon ' + typeClass + '">' + typeLabel + '</div>' +
+                            '<div class="resource-info">' +
+                                '<h4>' + esc(r.title) + '</h4>' +
+                                '<p>by ' + esc(r.user_name || 'Unknown') + '</p>' +
+                                (r.type === 'link' || r.type === 'pdf' ? '<a href="' + esc(r.content) + '" target="_blank">Open</a>' : '<span style="font-size:0.75rem;color:var(--gray);">' + esc(r.content.substring(0, 100)) + '</span>') +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+            }
+        }
+
+        function showPostResource() {
+            var type = prompt('Resource type (pdf / link / image / text):');
+            if (!type || ['pdf', 'link', 'image', 'text'].indexOf(type) === -1) { showToast('Invalid type', 'error'); return; }
+            var title = prompt('Title:');
+            if (!title) return;
+            var content = prompt('Content (URL or text):');
+            if (!content) return;
+            postResource(type, title, content);
+        }
+
+        async function postResource(type, title, content) {
+            var res = await api('POST', '/resources/submit', {
+                group_id: parseInt(groupId), type: type, title: title, content: content
+            });
+            if (res.ok) {
+                showToast('Submitted! Admin will review.', 'success');
+                loadResources();
+                loadWallet();
+            } else {
+                showToast(res.data.error || 'Failed', 'error');
+            }
+        }
+
+        // ── WALLET ──
+        async function loadWallet() {
+            var res = await api('GET', '/wallet/' + groupId);
+            if (res.ok && res.data.wallet) {
+                var w = res.data.wallet;
+                document.getElementById('walletCoins').textContent = w.coins || 0;
+                document.getElementById('walletDiamonds').textContent = w.diamonds || 0;
+                document.getElementById('walletStreak').textContent = (w.current_streak || 0) + 'd';
+            }
+        }
+
+        // ── INIT ──
+        async function init() {
+            var user = getUser();
+            if (!user) { window.location.href = '/index.html'; return; }
+            if (!groupId) { window.location.href = '/dashboard.html'; return; }
+
+            var groupRes = await api('GET', '/groups/' + groupId);
+            if (groupRes.ok) {
+                document.getElementById('groupName').textContent = groupRes.data.group.name;
+                document.getElementById('groupMeta').textContent = groupRes.data.group.member_count + ' members';
+            }
+
+            loadWallet();
+            loadMessages();
+
+            pollInterval = setInterval(function() {
+                if (currentTab === 'chat') loadMessages();
+            }, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
