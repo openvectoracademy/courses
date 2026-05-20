@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Create Account | Alcove Messenger</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
+            --accent: #E94560; --accent-light: #FF6B81;
+            --white: #EEEEEE; --gray: #8A8A9A; --text: #EEEEEE;
+            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+            --radius: 12px; --radius-lg: 18px; --shadow-lg: 0 20px 48px rgba(0,0,0,0.4);
+        }
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .header {
+            background: var(--surface); border-bottom: 2px solid var(--accent);
+            padding: 0 24px; height: 64px; display: flex; align-items: center;
+        }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon svg { width: 20px; height: 20px; color: white; }
+        .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--white); }
+        .logo-text span { color: var(--accent); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 9px 20px; font-weight: 600; font-size: 0.8rem; border-radius: 8px;
+            border: 2px solid transparent; cursor: pointer; transition: all 0.18s;
+            text-decoration: none; letter-spacing: 0.03em;
+        }
+        .btn-ghost { background: transparent; color: var(--white); border-color: var(--border2); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); }
+
+        .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+        .signup-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 32px 28px;
+            width: 100%; max-width: 440px; box-shadow: var(--shadow-lg);
+        }
+        .signup-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--white); margin-bottom: 4px; text-align: center; }
+        .signup-card .sub { text-align: center; color: var(--gray); font-size: 0.82rem; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.75rem; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .form-input {
+            width: 100%; padding: 11px 14px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.85rem;
+            outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: var(--accent); }
+        .form-input.error { border-color: var(--accent); }
+        .error-msg { color: var(--accent); font-size: 0.72rem; margin-top: 4px; display: none; }
+        .error-msg.show { display: block; }
+        .alert {
+            padding: 10px 14px; border-radius: 8px; font-size: 0.78rem;
+            margin-bottom: 16px; display: none;
+        }
+        .alert.show { display: block; }
+        .alert-error { background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.2); color: var(--accent-light); }
+        .alert-success { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); color: #4ADE80; }
+        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn-accent:hover { background: var(--accent-light); }
+        .btn-full { width: 100%; padding: 12px; font-size: 0.85rem; }
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .signup-footer { text-align: center; margin-top: 18px; font-size: 0.8rem; color: var(--gray); }
+        .signup-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+        .footer { background: var(--surface); border-top: 3px solid var(--accent); padding: 20px 24px; text-align: center; }
+        .footer p { font-size: 0.75rem; color: var(--gray); }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">
+                <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                <span class="logo-text">Alcove <span>Messenger</span></span>
+            </a>
+            <div><a href="/index.html" class="btn btn-ghost">Sign In</a></div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="signup-card">
+            <h2>Create Your Account</h2>
+            <p class="sub">Join the private community</p>
+
+            <div class="alert alert-error" id="alertError"></div>
+
+            <form id="signupForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Your real name" required autocomplete="name">
+                    <div class="error-msg" id="nameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                    <div class="error-msg" id="emailError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Min. 6 characters" required autocomplete="new-password">
+                    <div class="error-msg" id="passwordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Re-enter password" required>
+                    <div class="error-msg" id="confirmPasswordError"></div>
+                </div>
+                <button type="submit" class="btn btn-accent btn-full" id="submitBtn">
+                    <span id="btnText">Create Account</span>
+                    <span class="spinner" id="spinner" style="display:none;"></span>
+                </button>
+            </form>
+
+            <p class="signup-footer">Already have an account? <a href="/index.html">Sign in</a></p>
+        </div>
+    </main>
+
+    <footer class="footer"><p>&copy; 2026 Alcove Messenger. All rights reserved.</p></footer>
+
+    <script>
+        var API_BASE = '/api';
+        function showAlert(msg) { var el = document.getElementById('alertError'); el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 5000); }
+        function showError(id, msg) { document.getElementById(id + 'Error').textContent = msg; document.getElementById(id + 'Error').classList.add('show'); document.getElementById(id).classList.add('error'); }
+        function clearErrors() { document.querySelectorAll('.error-msg').forEach(function(e) { e.classList.remove('show'); }); document.querySelectorAll('.form-input').forEach(function(e) { e.classList.remove('error'); }); document.getElementById('alertError').classList.remove('show'); }
+        function setLoading(loading) { document.getElementById('btnText').style.display = loading ? 'none' : 'inline'; document.getElementById('spinner').style.display = loading ? 'inline-block' : 'none'; document.getElementById('submitBtn').disabled = loading; }
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); clearErrors();
+            var name = document.getElementById('name').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var password = document.getElementById('password').value;
+            var confirm = document.getElementById('confirmPassword').value;
+            var valid = true;
+            if (!name) { showError('name', 'Name is required'); valid = false; }
+            if (!email) { showError('email', 'Email is required'); valid = false; }
+            if (!password) { showError('password', 'Password is required'); valid = false; }
+            if (password.length < 6) { showError('password', 'Min 6 characters'); valid = false; }
+            if (password !== confirm) { showError('confirmPassword', 'Passwords do not match'); valid = false; }
+            if (!valid) return;
+
+            setLoading(true);
+            try {
+                var res = await fetch(API_BASE + '/auth/signup', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, email: email, password: password })
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    window.location.href = '/index.html?registered=1';
+                } else { showAlert(data.error || 'Registration failed'); }
+            } catch(e) { showAlert('Network error'); }
+            setLoading(false);
+        });
+
+        if (localStorage.getItem('alcove_token')) { window.location.href = '/dashboard.html'; }
+    </script>
+</body>
+</html>
