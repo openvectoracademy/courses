@@ -19,9 +19,7 @@
       --warning: #d97706;
       --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
       --radius: 12px;
-      --transition: all 0.2s ease;
     }
-
     body.dark {
       --bg: #0f172a;
       --surface: #1e293b;
@@ -29,41 +27,31 @@
       --text-secondary: #94a3b8;
       --border: #334155;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      transition: var(--transition);
+      padding: 1rem;
     }
-
     .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+      padding: 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
     }
-
     .logo {
       font-size: 1.5rem;
       font-weight: 800;
       background: linear-gradient(135deg, var(--primary), #2563eb);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
-
     .btn {
       padding: 0.5rem 1rem;
       border-radius: 50px;
@@ -71,453 +59,316 @@
       font-size: 0.85rem;
       cursor: pointer;
       border: none;
-      transition: var(--transition);
       background: var(--primary);
       color: white;
     }
-
-    .btn:hover {
-      background: var(--primary-hover);
-    }
-
     .btn-outline {
       background: transparent;
       border: 2px solid var(--border);
       color: var(--text);
     }
-
     .btn-sm {
       padding: 0.375rem 0.75rem;
       font-size: 0.8rem;
     }
-
-    .btn-success {
-      background: var(--success);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-    }
-
-    .btn-warning {
-      background: var(--warning);
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--warning); }
+    .card {
       background: var(--surface);
+      border-radius: var(--radius);
       padding: 1.5rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .stat-card h3 {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .stat-card .value {
-      font-size: 2rem;
-      font-weight: 700;
-    }
-
-    .table-container {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      overflow-x: auto;
-      box-shadow: var(--shadow);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-      background: var(--bg);
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid var(--border);
-    }
-
-    td {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
-    }
-
-    tr:hover {
-      background: var(--bg);
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .status-badge.premium {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-badge.free {
-      background: #e0e7ff;
-      color: #3730a3;
-    }
-
-    .status-badge.banned {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background: var(--bg);
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 400px;
-      width: 90%;
+      margin-bottom: 1rem;
       border: 1px solid var(--border);
     }
-
+    .card h3 {
+      margin-bottom: 1rem;
+    }
     .form-group {
       margin-bottom: 1rem;
     }
-
     .form-group label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
+      font-size: 0.9rem;
     }
-
-    .form-group input {
+    input, textarea {
       width: 100%;
       padding: 0.75rem;
       border: 2px solid var(--border);
       border-radius: 8px;
-      background: var(--surface);
+      background: var(--bg);
       color: var(--text);
+      font-size: 0.95rem;
     }
-
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th {
+      text-align: left;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .badge-premium { background: #fef3c7; color: #92400e; }
+    .badge-free { background: #e0e7ff; color: #3730a3; }
+    .badge-banned { background: #fee2e2; color: #991b1b; }
+    .badge-admin { background: #d1fae5; color: #065f46; }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .success-msg {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
     @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
-      
-      .header {
-        padding: 1rem;
-      }
+      body { padding: 0.5rem; }
+      .header { flex-wrap: wrap; gap: 0.5rem; }
     }
   </style>
 </head>
 <body>
-  <header class="header">
+  <div class="header">
     <div class="logo">Exalyte Admin</div>
     <div>
       <button class="btn btn-outline btn-sm" onclick="toggleTheme()">Theme</button>
-      <button class="btn btn-outline btn-sm" onclick="window.location.href='/dashboard.html'">Dashboard</button>
+      <button class="btn btn-outline btn-sm" onclick="location.href='/dashboard.html'">Dashboard</button>
       <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
     </div>
-  </header>
+  </div>
 
-  <div class="container">
-    <div class="stats">
-      <div class="stat-card">
-        <h3>Total Users</h3>
-        <div class="value" id="totalUsers">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Premium Users</h3>
-        <div class="value" id="premiumUsers">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Banned Users</h3>
-        <div class="value" id="bannedUsers">0</div>
-      </div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('settings')">API Settings</div>
+    <div class="tab" onclick="showTab('users')">Users</div>
+  </div>
+
+  <div class="success-msg" id="successMsg"></div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content active" id="tab-settings">
+    <div class="card">
+      <h3>API Configuration</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+        Set your OpenRouter API key and other settings here. These are stored securely in the database.
+      </p>
+      <form id="settingsForm">
+        <div class="form-group">
+          <label>OpenRouter API Key</label>
+          <input type="text" id="openrouterKey" placeholder="sk-or-v1-...">
+        </div>
+        <div class="form-group">
+          <label>JWT Secret Key</label>
+          <input type="text" id="jwtSecret" placeholder="Enter a secret key for JWT">
+        </div>
+        <div class="form-group">
+          <label>AI Model</label>
+          <input type="text" id="aiModel" placeholder="openai/gpt-3.5-turbo">
+        </div>
+        <div class="form-group">
+          <label>Admin Email</label>
+          <input type="email" id="adminEmail" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label>Admin Password</label>
+          <input type="password" id="adminPassword" placeholder="Leave blank to keep current">
+        </div>
+        <button type="submit" class="btn">Save Settings</button>
+      </form>
     </div>
+  </div>
 
-    <div class="table-container">
+  <!-- Users Tab -->
+  <div class="tab-content" id="tab-users">
+    <div class="card" style="overflow-x: auto;">
+      <h3>User Management</h3>
       <table>
         <thead>
           <tr>
-            <th>User</th>
+            <th>Name</th>
             <th>Email</th>
             <th>Status</th>
             <th>Credits</th>
             <th>Premium Until</th>
-            <th>Joined</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="usersTableBody">
-          <tr>
-            <td colspan="7" style="text-align:center;">Loading...</td>
-          </tr>
-        </tbody>
+        <tbody id="usersTable"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Grant Premium Modal -->
-  <div class="modal" id="grantModal">
-    <div class="modal-content">
-      <h3>Grant Premium Access</h3>
-      <div class="form-group">
-        <label>Days</label>
-        <input type="number" id="grantDays" value="30" min="1" max="365">
-      </div>
-      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button class="btn btn-success" onclick="confirmGrant()">Grant Premium</button>
-        <button class="btn btn-outline" onclick="closeGrantModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    const API_BASE = '/api';
-    let selectedUserEmail = null;
-
-    // Theme
-    function getTheme() {
-      return localStorage.getItem('theme') || 'light';
-    }
-
-    function setTheme(theme) {
-      localStorage.setItem('theme', theme);
-      document.body.classList.toggle('dark', theme === 'dark');
-    }
+    const API = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) location.href = '/';
 
     function toggleTheme() {
-      setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.tab:nth-child(${tab === 'settings' ? '1' : '2'})`).classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      if (tab === 'users') loadUsers();
     }
 
-    setTheme(getTheme());
-
-    // Auth check
-    if (!localStorage.getItem('token')) {
-      window.location.href = '/';
+    async function api(url, method = 'GET', body = null) {
+      const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(`${API}${url}`, opts);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      return data;
     }
 
+    // Load settings
+    async function loadSettings() {
+      try {
+        const settings = await api('/admin/settings');
+        document.getElementById('openrouterKey').value = settings.openrouter_api_key || '';
+        document.getElementById('jwtSecret').value = settings.jwt_secret || '';
+        document.getElementById('aiModel').value = settings.ai_model || 'openai/gpt-3.5-turbo';
+        document.getElementById('adminEmail').value = settings.admin_email || '';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Save settings
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = {
+          openrouter_api_key: document.getElementById('openrouterKey').value,
+          jwt_secret: document.getElementById('jwtSecret').value,
+          ai_model: document.getElementById('aiModel').value,
+          admin_email: document.getElementById('adminEmail').value
+        };
+        const pwd = document.getElementById('adminPassword').value;
+        if (pwd) data.admin_password = pwd;
+
+        await api('/admin/settings', 'POST', data);
+        
+        const msg = document.getElementById('successMsg');
+        msg.textContent = 'Settings saved successfully! Changes will take effect on next request.';
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 3000);
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+
+    // Load users
     async function loadUsers() {
       try {
-        const response = await fetch(`${API_BASE}/admin/users`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        if (!response.ok) {
-          if (response.status === 403) {
-            window.location.href = '/dashboard.html';
-            return;
-          }
-          throw new Error('Failed to load users');
-        }
-
-        const users = await response.json();
-        renderUsers(users);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-
-    function renderUsers(users) {
-      const tbody = document.getElementById('usersTableBody');
-      
-      let totalUsers = users.length;
-      let premiumUsers = 0;
-      let bannedUsers = 0;
-      
-      users.forEach(user => {
-        const isPremium = user.premium_until && new Date(user.premium_until) > new Date();
-        if (isPremium) premiumUsers++;
-        if (user.is_banned) bannedUsers++;
-      });
-      
-      document.getElementById('totalUsers').textContent = totalUsers;
-      document.getElementById('premiumUsers').textContent = premiumUsers;
-      document.getElementById('bannedUsers').textContent = bannedUsers;
-      
-      tbody.innerHTML = users.map(user => {
-        const isPremium = user.premium_until && new Date(user.premium_until) > new Date();
-        let statusClass = 'free';
-        let statusText = 'Free';
-        
-        if (user.is_banned) {
-          statusClass = 'banned';
-          statusText = 'Banned';
-        } else if (isPremium) {
-          statusClass = 'premium';
-          statusText = 'Premium';
-        }
-        
-        const premiumUntil = user.premium_until 
-          ? new Date(user.premium_until).toLocaleDateString() 
-          : '-';
-        
-        const created = new Date(user.created_at).toLocaleDateString();
-        
-        return `
-          <tr>
-            <td><strong>${user.name || 'N/A'}</strong></td>
-            <td>${user.email}</td>
-            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-            <td>${user.credits_left}</td>
-            <td>${premiumUntil}</td>
-            <td>${created}</td>
+        const users = await api('/admin/users');
+        const tbody = document.getElementById('usersTable');
+        tbody.innerHTML = users.map(u => {
+          const isPremium = u.premium_until && new Date(u.premium_until) > new Date();
+          let badge = '<span class="badge badge-free">Free</span>';
+          if (u.is_banned) badge = '<span class="badge badge-banned">Banned</span>';
+          else if (u.is_admin) badge = '<span class="badge badge-admin">Admin</span>';
+          else if (isPremium) badge = '<span class="badge badge-premium">Premium</span>';
+          
+          return `<tr>
+            <td>${u.name || '-'}</td>
+            <td>${u.email}</td>
+            <td>${badge}</td>
+            <td>${u.credits_left}</td>
+            <td>${u.premium_until ? new Date(u.premium_until).toLocaleDateString() : '-'}</td>
             <td>
-              <div class="actions">
-                <button class="btn btn-success btn-sm" onclick="openGrantModal('${user.email}')">Grant Premium</button>
-                ${isPremium ? `<button class="btn btn-danger btn-sm" onclick="revokePremium('${user.email}')">Revoke</button>` : ''}
-                ${user.is_banned ? `<button class="btn btn-warning btn-sm" onclick="unbanUser('${user.email}')">Unban</button>` : ''}
-              </div>
+              <button class="btn btn-success btn-sm" onclick="grantPremium('${u.email}')">+30d</button>
+              ${isPremium ? `<button class="btn btn-danger btn-sm" onclick="revokePremium('${u.email}')">Revoke</button>` : ''}
+              ${u.is_banned ? `<button class="btn btn-warning btn-sm" onclick="unbanUser('${u.email}')">Unban</button>` : ''}
             </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function openGrantModal(email) {
-      selectedUserEmail = email;
-      document.getElementById('grantModal').classList.add('active');
-      document.getElementById('grantDays').value = 30;
-    }
-
-    function closeGrantModal() {
-      document.getElementById('grantModal').classList.remove('active');
-      selectedUserEmail = null;
-    }
-
-    async function confirmGrant() {
-      const days = parseInt(document.getElementById('grantDays').value);
-      if (!days || days < 1) return;
-      
-      try {
-        const response = await fetch(`${API_BASE}/admin/grant`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ email: selectedUserEmail, days })
-        });
-        
-        if (response.ok) {
-          closeGrantModal();
-          loadUsers();
-        } else {
-          const data = await response.json();
-          alert('Error: ' + data.error);
-        }
-      } catch (error) {
-        alert('Error granting premium');
+          </tr>`;
+        }).join('');
+      } catch (e) {
+        console.error(e);
       }
+    }
+
+    async function grantPremium(email) {
+      try {
+        await api('/admin/grant', 'POST', { email, days: 30 });
+        loadUsers();
+      } catch (e) { alert(e.message); }
     }
 
     async function revokePremium(email) {
-      if (!confirm('Revoke premium access for ' + email + '?')) return;
-      
+      if (!confirm('Revoke premium from ' + email + '?')) return;
       try {
-        const response = await fetch(`${API_BASE}/admin/revoke`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ email })
-        });
-        
-        if (response.ok) {
-          loadUsers();
-        }
-      } catch (error) {
-        alert('Error revoking premium');
-      }
+        await api('/admin/revoke', 'POST', { email });
+        loadUsers();
+      } catch (e) { alert(e.message); }
     }
 
     async function unbanUser(email) {
-      if (!confirm('Unban user ' + email + '?')) return;
-      
+      if (!confirm('Unban ' + email + '?')) return;
       try {
-        const response = await fetch(`${API_BASE}/admin/unban`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ email })
-        });
-        
-        if (response.ok) {
-          loadUsers();
-        }
-      } catch (error) {
-        alert('Error unbanning user');
-      }
+        await api('/admin/unban', 'POST', { email });
+        loadUsers();
+      } catch (e) { alert(e.message); }
     }
 
     function logout() {
       localStorage.removeItem('token');
-      window.location.href = '/';
+      location.href = '/';
     }
 
-    // Modal click outside to close
-    document.getElementById('grantModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('grantModal')) {
-        closeGrantModal();
-      }
-    });
-
-    // Load users on page load
-    loadUsers();
+    // Initialize
+    loadSettings();
   </script>
 </body>
 </html>
