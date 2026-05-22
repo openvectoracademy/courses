@@ -1,8 +1,12 @@
-// functions/api/[[route]].js
-// Exalyte AI - API keys managed via database
-
 export async function onRequest(context) {
   const { request, env } = context;
+  
+  // Skip non-API routes (let static files through)
+  const url = new URL(request.url);
+  if (!url.pathname.startsWith('/api/')) {
+    return context.next();
+  }
+  
   const DB = env.DB;
 
   const corsHeaders = {
@@ -33,7 +37,6 @@ export async function onRequest(context) {
     return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // Get settings from database
   async function getSettings() {
     const settings = await DB.prepare("SELECT key, value FROM settings").all();
     const config = {};
@@ -70,14 +73,12 @@ export async function onRequest(context) {
     return await DB.prepare("SELECT * FROM users WHERE id = ?").bind(payload.id).first();
   }
 
-  // Initialize database
   await DB.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
       updated_at TEXT DEFAULT (datetime('now'))
     );
-    
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -91,7 +92,6 @@ export async function onRequest(context) {
       device_fingerprint TEXT,
       created_at TEXT DEFAULT (datetime('now'))
     );
-    
     CREATE TABLE IF NOT EXISTS chats (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -101,14 +101,12 @@ export async function onRequest(context) {
     );
   `);
 
-  // Insert default settings if not exists
   await DB.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('jwt_secret', 'default-jwt-secret-change-me')").run();
   await DB.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('openrouter_api_key', '')").run();
   await DB.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('ai_model', 'openai/gpt-3.5-turbo')").run();
   await DB.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_email', 'adminai@gmail.com')").run();
   await DB.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_password', 'adminai2099')").run();
 
-  // Seed admin user
   const adminEmail = (await DB.prepare("SELECT value FROM settings WHERE key = 'admin_email'").first()).value;
   const adminPassword = (await DB.prepare("SELECT value FROM settings WHERE key = 'admin_password'").first()).value;
   const adminExists = await DB.prepare("SELECT id FROM users WHERE email = ?").bind(adminEmail).first();
@@ -117,32 +115,25 @@ export async function onRequest(context) {
     await DB.prepare("INSERT INTO users (name, email, password, is_admin, credits_left) VALUES ('Admin', ?, ?, 1, 999999)").bind(adminEmail, adminHash).run();
   }
 
-  // Get current settings
   const settings = await getSettings();
   const JWT_SECRET = settings.jwt_secret || "default-jwt-secret-change-me";
   const OPENROUTER_API_KEY = settings.openrouter_api_key || "";
   const AI_MODEL = settings.ai_model || "openai/gpt-3.5-turbo";
 
-  const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
 
   try {
-    // Public routes
     if (path === "/api/auth/signup" && method === "POST") {
       const { name, email, password } = await request.json();
       if (!name || !email || !password) return error("All fields required");
       if (password.length < 6) return error("Password too short");
-
       const exists = await DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
       if (exists) return error("Email already registered", 409);
-
       const hash = await sha256(password);
       const fp = request.headers.get("CF-Connecting-IP") || "unknown";
       const resetAt = new Date(Date.now() + 7 * 86400000).toISOString();
-
       await DB.prepare("INSERT INTO users (name, email, password, device_fingerprint, credits_left, credits_reset_at) VALUES (?, ?, ?, ?, 3, ?)").bind(name, email, hash, fp, resetAt).run();
-
       const user = await DB.prepare("SELECT id, name, email, is_admin FROM users WHERE email = ?").bind(email).first();
       const token = await createJWT({ id: user.id, email: user.email }, JWT_SECRET);
       return json({ token, user });
@@ -151,29 +142,23 @@ export async function onRequest(context) {
     if (path === "/api/auth/login" && method === "POST") {
       const { email, password } = await request.json();
       if (!email || !password) return error("Email and password required");
-
       const hash = await sha256(password);
       const user = await DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?").bind(email, hash).first();
       if (!user) return error("Invalid credentials", 401);
       if (user.is_banned) return error("Account banned", 403);
-
       const isPremium = user.premium_until && new Date(user.premium_until) > new Date();
       const currentFp = request.headers.get("CF-Connecting-IP") || "unknown";
-
       if (isPremium && user.device_fingerprint && user.device_fingerprint !== currentFp) {
         await DB.prepare("UPDATE users SET is_banned = 1 WHERE id = ?").bind(user.id).run();
         return error("Account banned: Different device", 403);
       }
-
       if (!isPremium) {
         await DB.prepare("UPDATE users SET device_fingerprint = ? WHERE id = ?").bind(currentFp, user.id).run();
       }
-
       const token = await createJWT({ id: user.id, email: user.email }, JWT_SECRET);
       return json({ token });
     }
 
-    // Protected routes
     const user = await authenticate(request, JWT_SECRET);
     if (!user) return error("Unauthorized", 401);
     if (user.is_banned) return error("Account banned", 403);
@@ -184,13 +169,10 @@ export async function onRequest(context) {
     }
 
     if (path === "/api/chat/send" && method === "POST") {
-      if (!OPENROUTER_API_KEY) return error("API key not configured. Admin must set it first.", 500);
-
+      if (!OPENROUTER_API_KEY) return error("API key not configured. Admin must set it in admin panel.", 500);
       const { message } = await request.json();
       if (!message || !message.trim()) return error("Message required");
-
       const isPremium = user.premium_until && new Date(user.premium_until) > new Date();
-
       if (!isPremium) {
         const now = new Date();
         const resetAt = user.credits_reset_at ? new Date(user.credits_reset_at) : null;
@@ -202,24 +184,20 @@ export async function onRequest(context) {
         if (user.credits_left <= 0) return error("No credits left", 402);
         await DB.prepare("UPDATE users SET credits_left = credits_left - 1 WHERE id = ?").bind(user.id).run();
       }
-
       await DB.prepare("INSERT INTO chats (user_id, role, message) VALUES (?, 'user', ?)").bind(user.id, message).run();
-
       const history = await DB.prepare("SELECT role, message FROM chats WHERE user_id = ? ORDER BY created_at DESC LIMIT 10").bind(user.id).all();
       const messages = [{ role: "system", content: "You are Exalyte AI, a personal AI study mentor. Help with exam strategy, revision plans, time management. Be friendly and practical." }];
       history.results.reverse().forEach(h => messages.push({ role: h.role, content: h.message }));
-
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.7, max_tokens: 1000 })
       });
       const aiData = await res.json();
+      if (aiData.error) return error("AI Error: " + aiData.error.message, 500);
       const reply = aiData.choices[0].message.content;
-
       await DB.prepare("INSERT INTO chats (user_id, role, message) VALUES (?, 'assistant', ?)").bind(user.id, reply).run();
       const updated = await DB.prepare("SELECT credits_left, premium_until FROM users WHERE id = ?").bind(user.id).first();
-
       return json({ reply, credits_left: updated.credits_left, is_premium: updated.premium_until && new Date(updated.premium_until) > new Date() });
     }
 
@@ -228,7 +206,6 @@ export async function onRequest(context) {
       return json(history.results);
     }
 
-    // Admin routes
     if (!user.is_admin) return error("Not found", 404);
 
     if (path === "/api/admin/settings" && method === "GET") {
@@ -237,7 +214,6 @@ export async function onRequest(context) {
 
     if (path === "/api/admin/settings" && method === "POST") {
       const { openrouter_api_key, jwt_secret, ai_model, admin_email, admin_password } = await request.json();
-      
       if (openrouter_api_key) await DB.prepare("UPDATE settings SET value = ?, updated_at = datetime('now') WHERE key = 'openrouter_api_key'").bind(openrouter_api_key).run();
       if (jwt_secret) await DB.prepare("UPDATE settings SET value = ?, updated_at = datetime('now') WHERE key = 'jwt_secret'").bind(jwt_secret).run();
       if (ai_model) await DB.prepare("UPDATE settings SET value = ?, updated_at = datetime('now') WHERE key = 'ai_model'").bind(ai_model).run();
@@ -247,7 +223,6 @@ export async function onRequest(context) {
         const hash = await sha256(admin_password);
         await DB.prepare("UPDATE users SET password = ? WHERE is_admin = 1").bind(hash).run();
       }
-      
       return json({ success: true, message: "Settings updated" });
     }
 
@@ -258,6 +233,7 @@ export async function onRequest(context) {
 
     if (path === "/api/admin/grant" && method === "POST") {
       const { email, days } = await request.json();
+      if (!email || !days) return error("Email and days required");
       const until = new Date(Date.now() + days * 86400000).toISOString();
       await DB.prepare("UPDATE users SET premium_until = ? WHERE email = ?").bind(until, email).run();
       return json({ success: true });
@@ -265,12 +241,14 @@ export async function onRequest(context) {
 
     if (path === "/api/admin/revoke" && method === "POST") {
       const { email } = await request.json();
+      if (!email) return error("Email required");
       await DB.prepare("UPDATE users SET premium_until = NULL WHERE email = ?").bind(email).run();
       return json({ success: true });
     }
 
     if (path === "/api/admin/unban" && method === "POST") {
       const { email } = await request.json();
+      if (!email) return error("Email required");
       await DB.prepare("UPDATE users SET is_banned = 0 WHERE email = ?").bind(email).run();
       return json({ success: true });
     }
