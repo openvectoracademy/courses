@@ -1,253 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Alcove Messenger | Private Community Platform</title>
-    <meta name="description" content="Alcove Messenger — A private, invite-only messaging platform with gamified learning communities.">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#2563eb">
+  <title>Exalyte AI - Your Personal Student Mentor</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #7c3aed;
+      --success: #059669;
+      --danger: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --transition: all 0.2s ease;
+    }
 
-        :root {
-            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
-            --accent: #E94560; --accent-light: #FF6B81; --accent-glow: rgba(233,69,96,0.15);
-            --white: #EEEEEE; --gray: #8A8A9A; --gray2: #5A5A6A;
-            --text: #EEEEEE; --text-muted: #8A8A9A;
-            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2); --shadow-lg: 0 20px 48px rgba(0,0,0,0.4);
-            --radius: 12px; --radius-lg: 18px;
-        }
+    body.dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+    }
 
-        body {
-            font-family: 'Outfit', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .header {
-            background: var(--surface); border-bottom: 2px solid var(--accent);
-            padding: 0 24px; height: 64px; display: flex; align-items: center;
-        }
-        .header-inner {
-            display: flex; justify-content: space-between; align-items: center;
-            max-width: 1200px; margin: 0 auto; width: 100%;
-        }
-        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .logo-icon {
-            width: 36px; height: 36px; background: var(--accent); border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .logo-icon svg { width: 20px; height: 20px; color: white; }
-        .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--white); letter-spacing: -0.01em; }
-        .logo-text span { color: var(--accent); }
-        .header-right { display: flex; align-items: center; gap: 12px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: var(--transition);
+      min-height: 100vh;
+    }
 
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 9px 20px; font-weight: 600; font-size: 0.8rem; border-radius: 8px;
-            border: 2px solid transparent; cursor: pointer; transition: all 0.18s;
-            text-decoration: none; letter-spacing: 0.03em; white-space: nowrap;
-        }
-        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
-        .btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(233,69,96,0.3); }
-        .btn-ghost { background: transparent; color: var(--white); border-color: var(--border2); }
-        .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
-        .btn-lg { padding: 13px 28px; font-size: 0.9rem; }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
 
-        .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
 
-        .hero-split {
-            display: flex; max-width: 1000px; width: 100%; gap: 40px; align-items: center;
-        }
-        @media (max-width: 768px) { .hero-split { flex-direction: column; gap: 32px; } }
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
 
-        .hero-info { flex: 1; }
-        .hero-info h1 {
-            font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-            color: var(--white); line-height: 1.15; margin-bottom: 16px;
-        }
-        .hero-info h1 em { font-style: italic; color: var(--accent); }
-        .hero-info p { font-size: 0.9rem; color: var(--gray); line-height: 1.7; margin-bottom: 24px; }
-        .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-        .feature-list li { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--gray); }
-        .feature-list li svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+    .btn {
+      padding: 0.625rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: white;
+    }
 
-        .login-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); padding: 32px 28px;
-            width: 100%; max-width: 400px; flex-shrink: 0;
-        }
-        .login-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--white); margin-bottom: 4px; text-align: center; }
-        .login-card .sub { text-align: center; color: var(--gray); font-size: 0.82rem; margin-bottom: 24px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-weight: 600; font-size: 0.75rem; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
-        .form-input {
-            width: 100%; padding: 11px 14px; background: var(--bg);
-            border: 1px solid var(--border); border-radius: 8px;
-            color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.85rem;
-            outline: none; transition: border-color 0.15s;
-        }
-        .form-input:focus { border-color: var(--accent); }
-        .form-input.error { border-color: var(--accent); }
-        .error-msg { color: var(--accent); font-size: 0.72rem; margin-top: 4px; display: none; }
-        .error-msg.show { display: block; }
-        .alert {
-            padding: 10px 14px; border-radius: 8px; font-size: 0.78rem;
-            margin-bottom: 16px; display: none;
-        }
-        .alert.show { display: block; }
-        .alert-error { background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.2); color: var(--accent-light); }
-        .btn-full { width: 100%; padding: 12px; font-size: 0.85rem; }
-        .spinner {
-            width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite;
-            display: inline-block;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .login-footer { text-align: center; margin-top: 18px; font-size: 0.8rem; color: var(--gray); }
-        .login-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
-        .login-footer a:hover { text-decoration: underline; }
+    .btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
 
-        .footer { background: var(--surface); border-top: 3px solid var(--accent); padding: 20px 24px; text-align: center; }
-        .footer p { font-size: 0.75rem; color: var(--gray2); }
-    </style>
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: var(--surface);
+    }
+
+    .theme-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: var(--transition);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .feature-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 0.75rem;
+      font-size: 1.25rem;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+    }
+
+    .modal h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.75rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .modal-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .modal-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .error-message {
+      background: #fef2f2;
+      color: var(--danger);
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        padding: 1rem;
+      }
+      
+      .container {
+        padding: 1rem;
+      }
+      
+      .hero {
+        padding: 2rem 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <nav class="nav">
+    <div class="logo">Exalyte AI</div>
+    <div class="nav-actions">
+      <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="btn btn-outline" onclick="openAuth('login')">Sign In</button>
+      <button class="btn" onclick="openAuth('signup')">Get Started Free</button>
+    </div>
+  </nav>
 
-    <header class="header">
-        <div class="header-inner">
-            <a href="/" class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </div>
-                <span class="logo-text">Alcove <span>Messenger</span></span>
-            </a>
-            <div class="header-right">
-                <a href="/signup.html" class="btn btn-accent">Create Account</a>
-            </div>
+  <div class="container">
+    <div class="hero">
+      <h1>Your Personal AI Study Mentor</h1>
+      <p>Get personalized exam strategies, revision plans, and motivation from Exalyte AI. Your academic success partner, available 24/7.</p>
+      <button class="btn" style="font-size: 1.1rem; padding: 0.875rem 2rem;" onclick="openAuth('signup')">
+        Start Learning Now
+      </button>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
         </div>
-    </header>
+        <h3>Smart Exam Planning</h3>
+        <p>Get customized revision schedules based on your exam dates, subjects, and current knowledge level.</p>
+      </div>
 
-    <main class="main">
-        <div class="hero-split">
-            <div class="hero-info">
-                <h1>Private Communities,<br><em>Built for Growth</em></h1>
-                <p>Join secret groups with invite codes, complete daily tasks, earn rewards, and connect through admin-curated conversations.</p>
-                <ul class="feature-list">
-                    <li>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Secret groups with invite codes
-                    </li>
-                    <li>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Daily tasks with streak rewards
-                    </li>
-                    <li>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Resource sharing economy
-                    </li>
-                    <li>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Admin-managed conversations
-                    </li>
-                </ul>
-            </div>
-
-            <div class="login-card">
-                <h2>Welcome Back</h2>
-                <p class="sub">Sign in to your alcove</p>
-
-                <div class="alert alert-error" id="alertError"></div>
-
-                <form id="loginForm" autocomplete="on">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
-                        <div class="error-msg" id="emailError"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" class="form-input" placeholder="Your password" required autocomplete="current-password">
-                        <div class="error-msg" id="passwordError"></div>
-                    </div>
-                    <button type="submit" class="btn btn-accent btn-full" id="submitBtn">
-                        <span id="btnText">Sign In</span>
-                        <span class="spinner" id="spinner" style="display:none;"></span>
-                    </button>
-                </form>
-
-                <p class="login-footer">Don't have an account? <a href="/signup.html">Create one</a></p>
-            </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
         </div>
-    </main>
+        <h3>Time Management</h3>
+        <p>Master effective study techniques with AI-optimized schedules tailored to your learning style.</p>
+      </div>
 
-    <footer class="footer">
-        <p>&copy; 2026 Alcove Messenger. All rights reserved.</p>
-    </footer>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <h3>Motivation Boost</h3>
+        <p>Stay on track with personalized encouragement and progress tracking to reach your academic goals.</p>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        var API_BASE = '/api';
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <h2 id="modalTitle">Sign In</h2>
+      <div class="error-message" id="authError"></div>
+      <form id="authForm">
+        <div class="form-group" id="nameGroup" style="display:none;">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required minlength="6">
+        </div>
+        <button type="submit" class="btn" style="width:100%;">Continue</button>
+      </form>
+      <div class="modal-footer">
+        <span id="switchText">Don't have an account?</span>
+        <a href="#" id="switchLink">Sign Up</a>
+      </div>
+      <button class="btn btn-outline" style="width:100%; margin-top:0.75rem;" onclick="closeAuth()">Cancel</button>
+    </div>
+  </div>
 
-        function showAlert(msg) {
-            var el = document.getElementById('alertError');
-            el.textContent = msg; el.classList.add('show');
-            setTimeout(function() { el.classList.remove('show'); }, 5000);
-        }
-        function showError(id, msg) {
-            document.getElementById(id + 'Error').textContent = msg;
-            document.getElementById(id + 'Error').classList.add('show');
-            document.getElementById(id).classList.add('error');
-        }
-        function clearErrors() {
-            document.querySelectorAll('.error-msg').forEach(function(e) { e.classList.remove('show'); });
-            document.querySelectorAll('.form-input').forEach(function(e) { e.classList.remove('error'); });
-            document.getElementById('alertError').classList.remove('show');
-        }
-        function setLoading(loading) {
-            document.getElementById('btnText').style.display = loading ? 'none' : 'inline';
-            document.getElementById('spinner').style.display = loading ? 'inline-block' : 'none';
-            document.getElementById('submitBtn').disabled = loading;
-        }
+  <script>
+    const API_BASE = '/api';
+    let authMode = 'login';
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault(); clearErrors();
-            var email = document.getElementById('email').value.trim();
-            var password = document.getElementById('password').value;
-            var valid = true;
-            if (!email) { showError('email', 'Email is required'); valid = false; }
-            if (!password) { showError('password', 'Password is required'); valid = false; }
-            if (!valid) return;
+    // Theme Management
+    function getTheme() {
+      return localStorage.getItem('theme') || 'light';
+    }
 
-            setLoading(true);
-            try {
-                var res = await fetch(API_BASE + '/auth/login', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
-                });
-                var data = await res.json();
-                if (res.ok && data.token) {
-                    localStorage.setItem('alcove_token', data.token);
-                    localStorage.setItem('alcove_user', JSON.stringify(data.user));
-                    window.location.href = '/dashboard.html';
-                } else {
-                    showAlert(data.error || 'Login failed');
-                }
-            } catch(e) { showAlert('Network error. Please try again.'); }
-            setLoading(false);
+    function setTheme(theme) {
+      localStorage.setItem('theme', theme);
+      document.body.classList.toggle('dark', theme === 'dark');
+    }
+
+    function toggleTheme() {
+      const newTheme = getTheme() === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    }
+
+    // Initialize theme
+    setTheme(getTheme());
+
+    // Auth Modal Management
+    function openAuth(mode) {
+      authMode = mode;
+      const modal = document.getElementById('authModal');
+      const title = document.getElementById('modalTitle');
+      const nameGroup = document.getElementById('nameGroup');
+      const switchText = document.getElementById('switchText');
+      const switchLink = document.getElementById('switchLink');
+      const errorDiv = document.getElementById('authError');
+      
+      modal.classList.add('active');
+      errorDiv.style.display = 'none';
+      
+      if (mode === 'signup') {
+        title.textContent = 'Create Account';
+        nameGroup.style.display = 'block';
+        switchText.textContent = 'Already have an account?';
+        switchLink.textContent = 'Sign In';
+      } else {
+        title.textContent = 'Welcome Back';
+        nameGroup.style.display = 'none';
+        switchText.textContent = 'New to Exalyte?';
+        switchLink.textContent = 'Create Account';
+      }
+      
+      document.getElementById('authForm').reset();
+    }
+
+    function closeAuth() {
+      document.getElementById('authModal').classList.remove('active');
+    }
+
+    // Switch between login/signup
+    document.getElementById('switchLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      openAuth(authMode === 'login' ? 'signup' : 'login');
+    });
+
+    // Close modal on overlay click
+    document.getElementById('authModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('authModal')) {
+        closeAuth();
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const errorDiv = document.getElementById('authError');
+      errorDiv.style.display = 'none';
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('name').value;
+      
+      const endpoint = authMode === 'signup' ? '/auth/signup' : '/auth/login';
+      const body = authMode === 'signup' 
+        ? { name, email, password }
+        : { email, password };
+      
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
         });
-
-        if (localStorage.getItem('alcove_token')) {
-            window.location.href = '/dashboard.html';
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Something went wrong');
         }
-    </script>
+        
+        // Store token and redirect
+        localStorage.setItem('token', data.token);
+        window.location.href = '/dashboard.html';
+        
+      } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // Check if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = '/dashboard.html';
+    }
+  </script>
 </body>
 </html>
