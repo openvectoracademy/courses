@@ -1,268 +1,559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Dashboard | Alcove Messenger</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #1A1A2E; --surface: #16213E; --surface2: #0F3460;
-            --accent: #E94560; --accent-light: #FF6B81; --accent-glow: rgba(233,69,96,0.12);
-            --white: #EEEEEE; --gray: #8A8A9A; --gray2: #5A5A6A;
-            --text: #EEEEEE; --text-muted: #8A8A9A;
-            --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
-            --green: #4ADE80; --orange: #F59E0B;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2); --shadow-lg: 0 20px 48px rgba(0,0,0,0.4);
-            --radius: 12px; --radius-lg: 18px;
-        }
-        body {
-            font-family: 'Outfit', system-ui, sans-serif;
-            background: var(--bg); color: var(--text);
-            line-height: 1.6; min-height: 100vh;
-            display: flex; flex-direction: column;
-        }
-        .header {
-            background: var(--surface); border-bottom: 2px solid var(--accent);
-            height: 64px; display: flex; align-items: center; padding: 0 24px;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .header-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .logo-icon svg { width: 18px; height: 18px; color: white; }
-        .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--white); }
-        .logo-text span { color: var(--accent); }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 8px 18px; font-weight: 600; font-size: 0.78rem; border-radius: 8px;
-            border: 2px solid transparent; cursor: pointer; transition: all 0.18s;
-            text-decoration: none; letter-spacing: 0.03em; white-space: nowrap;
-        }
-        .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
-        .btn-accent:hover { background: var(--accent-light); }
-        .btn-ghost { background: transparent; color: var(--white); border-color: var(--border2); }
-        .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
-        .btn-sm { padding: 6px 14px; font-size: 0.7rem; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#2563eb">
+  <title>Exalyte AI - Dashboard</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #7c3aed;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --radius: 12px;
+      --transition: all 0.2s ease;
+    }
 
-        .main { flex: 1; padding: 28px 24px 60px; max-width: 900px; margin: 0 auto; width: 100%; }
+    body.dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+    }
 
-        .welcome-bar { margin-bottom: 24px; }
-        .welcome-bar h1 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--white); }
-        .welcome-bar p { color: var(--gray); font-size: 0.88rem; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 32px; }
-        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
-        .stat-icon { width: 32px; height: 32px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
-        .stat-icon svg { width: 18px; height: 18px; }
-        .stat-icon.coin { color: #F59E0B; }
-        .stat-icon.diamond { color: #60A5FA; }
-        .stat-icon.streak { color: var(--accent); }
-        .stat-number { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--white); }
-        .stat-label { font-size: 0.68rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: var(--transition);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .section-title { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--white); margin-bottom: 14px; }
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
 
-        .card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
-        .card-item {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 16px 20px;
-            display: flex; align-items: center; justify-content: space-between;
-            text-decoration: none; color: var(--text); transition: all 0.2s;
-            gap: 12px;
-        }
-        .card-item:hover { border-color: var(--accent); background: rgba(233,69,96,0.05); }
-        .card-item-info { flex: 1; min-width: 0; }
-        .card-item-info h3 { font-size: 0.95rem; color: var(--white); margin-bottom: 2px; }
-        .card-item-info p { font-size: 0.75rem; color: var(--gray); }
-        .card-item-badge { font-size: 0.65rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
-        .badge-group { background: rgba(233,69,96,0.12); color: var(--accent); }
-        .badge-dm { background: rgba(96,165,250,0.12); color: #60A5FA; }
-        .card-item-arrow { color: var(--gray); flex-shrink: 0; }
-        .card-item-arrow svg { width: 16px; height: 16px; }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-        .join-card {
-            background: var(--surface); border: 2px dashed var(--border2);
-            border-radius: var(--radius); padding: 20px; text-align: center;
-            margin-bottom: 32px;
-        }
-        .join-card h3 { font-size: 0.95rem; color: var(--white); margin-bottom: 12px; }
-        .join-row { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; }
-        .join-input {
-            flex: 1; padding: 10px 14px; background: var(--bg);
-            border: 1px solid var(--border); border-radius: 8px;
-            color: var(--white); font-family: 'Outfit', sans-serif; font-size: 0.85rem; outline: none;
-        }
-        .join-input:focus { border-color: var(--accent); }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
 
-        .empty-state { text-align: center; padding: 24px; color: var(--gray); font-size: 0.85rem; }
+    .badge {
+      padding: 0.375rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--border);
+      color: var(--text);
+    }
 
-        .footer { background: var(--surface); border-top: 3px solid var(--accent); padding: 20px 24px; text-align: center; }
-        .footer p { font-size: 0.75rem; color: var(--gray2); }
+    .badge.premium {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
 
-        .toast {
-            position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
-            border-radius: 8px; font-weight: 500; font-size: 0.8rem;
-            z-index: 9999; opacity: 0; transform: translateY(10px);
-            transition: all 0.3s; pointer-events: none;
-        }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast-success { background: var(--green); color: #000; }
-        .toast-error { background: var(--accent); color: white; }
+    .credits {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
 
-        .spinner {
-            width: 24px; height: 24px; border: 3px solid var(--border2);
-            border-top-color: var(--accent); border-radius: 50%;
-            animation: spin 0.8s linear infinite; display: inline-block;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-state { text-align: center; padding: 40px; color: var(--gray); }
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      background: var(--primary);
+      color: white;
+    }
 
-        @media (max-width: 500px) {
-            .header-right .hide-mobile { display: none; }
-        }
-    </style>
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.875rem;
+      font-size: 0.8rem;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 1.5rem;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      flex: 1;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 0.875rem 1.25rem;
+      border-radius: 18px;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      background: var(--border);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-input-container {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 0.75rem 1.25rem;
+      border: 2px solid var(--border);
+      border-radius: 25px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      transition: var(--transition);
+      resize: none;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .send-btn:hover {
+      background: var(--primary-hover);
+      transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .premium-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .premium-modal.active {
+      display: flex;
+    }
+
+    .premium-content {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .premium-content h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .telegram-link {
+      display: inline-block;
+      margin: 1.5rem 0;
+      padding: 0.75rem 2rem;
+      background: #0088cc;
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem;
+      }
+      
+      .main-container {
+        padding: 1rem;
+      }
+      
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="logo">Exalyte AI</div>
+    <div class="user-info">
+      <span class="badge" id="premiumBadge">Free</span>
+      <div class="credits">
+        <span>Credits:</span>
+        <strong id="creditsCount">-</strong>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="toggleTheme()">Theme</button>
+      <button class="btn btn-outline btn-sm" id="premiumBtn">Go Premium</button>
+      <button class="btn btn-sm" id="adminBtn" style="display:none;" onclick="window.location.href='/admin.html'">Admin</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-    <header class="header">
-        <div class="header-inner">
-            <a href="/" class="logo">
-                <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-                <span class="logo-text">Alcove <span>Messenger</span></span>
-            </a>
-            <div class="header-right">
-                <span class="hide-mobile" style="font-size:0.8rem;color:var(--gray);" id="navUserName"></span>
-                <a href="#" onclick="signOut(event)" class="btn btn-ghost btn-sm">Sign Out</a>
-            </div>
+  <div class="main-container">
+    <div class="chat-container">
+      <div class="chat-header">
+        <h3>AI Mentor Chat</h3>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message assistant">
+          Hello! I'm Exalyte AI, your personal study mentor. Tell me about your upcoming exams, subjects you're studying, or any areas where you need help. I'm here to create personalized study plans and keep you motivated!
         </div>
-    </header>
+      </div>
+      <div class="chat-input-container">
+        <input 
+          type="text" 
+          class="chat-input" 
+          id="messageInput" 
+          placeholder="Ask about study plans, revision strategies..."
+          autocomplete="off"
+        >
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <main class="main">
-        <div class="welcome-bar">
-            <h1 id="welcomeHeading">My Dashboard</h1>
-            <p>Your groups, conversations, and rewards</p>
-        </div>
+  <!-- Premium Modal -->
+  <div class="premium-modal" id="premiumModal">
+    <div class="premium-content">
+      <h3>Upgrade to Premium</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+        Get unlimited AI mentor chats and priority support.
+      </p>
+      <p style="margin-bottom: 1.5rem;">
+        Contact <strong>@adamzampas</strong> on Telegram for payment instructions. Premium activation within 24 hours after payment.
+      </p>
+      <a href="https://t.me/adamzampas" target="_blank" class="telegram-link">
+        Contact on Telegram
+      </a>
+      <br><br>
+      <button class="btn btn-outline" onclick="closePremiumModal()">Close</button>
+    </div>
+  </div>
 
-        <div class="stats-row" id="statsRow"></div>
+  <script>
+    const API_BASE = '/api';
+    let currentUser = null;
 
-        <div class="join-card">
-            <h3>Join a Secret Group</h3>
-            <div class="join-row">
-                <input type="text" class="join-input" id="inviteCodeInput" placeholder="Enter invite code (e.g. ALC-XXXX)">
-                <button class="btn btn-accent" onclick="joinGroup()">Join</button>
-            </div>
-        </div>
+    // Theme Management
+    function getTheme() {
+      return localStorage.getItem('theme') || 'light';
+    }
 
-        <h3 class="section-title">My Groups</h3>
-        <div class="card-list" id="groupsList"><div class="loading-state"><div class="spinner"></div></div></div>
+    function setTheme(theme) {
+      localStorage.setItem('theme', theme);
+      document.body.classList.toggle('dark', theme === 'dark');
+    }
 
-        <h3 class="section-title">My Conversations</h3>
-        <div class="card-list" id="conversationsList"><div class="loading-state"><div class="spinner"></div></div></div>
-    </main>
+    function toggleTheme() {
+      const newTheme = getTheme() === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    }
 
-    <footer class="footer"><p>&copy; 2026 Alcove Messenger. All rights reserved.</p></footer>
+    setTheme(getTheme());
 
-    <div class="toast" id="toast"></div>
+    // Check authentication
+    if (!localStorage.getItem('token')) {
+      window.location.href = '/';
+    }
 
-    <script>
-        var API_BASE = '/api';
-        function esc(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
-        function getToken() { return localStorage.getItem('alcove_token') || ''; }
-        function getUser() { try { return JSON.parse(localStorage.getItem('alcove_user') || 'null'); } catch(e) { return null; } }
-        function signOut(e) { e.preventDefault(); localStorage.removeItem('alcove_token'); localStorage.removeItem('alcove_user'); window.location.href = '/'; }
-        function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast toast-' + (type||'success') + ' show'; setTimeout(function(){t.classList.remove('show');}, 2500); }
-
-        async function api(method, path, body) {
-            var opts = { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() } };
-            if (body) opts.body = JSON.stringify(body);
-            var res = await fetch(API_BASE + path, opts);
-            var data = await res.json();
-            if (res.status === 401) { signOut(new Event('click')); return { ok: false }; }
-            return { ok: res.ok, data: data };
-        }
-
-        async function joinGroup() {
-            var code = document.getElementById('inviteCodeInput').value.trim();
-            if (!code) { showToast('Enter an invite code', 'error'); return; }
-            var res = await api('POST', '/groups/join', { invite_code: code });
-            if (res.ok) {
-                showToast('Joined group: ' + res.data.group.name);
-                document.getElementById('inviteCodeInput').value = '';
-                loadDashboard();
-            } else {
-                showToast(res.data.error || 'Invalid code', 'error');
-            }
-        }
-
-        async function loadDashboard() {
-            var user = getUser();
-            if (!user) { window.location.href = '/index.html'; return; }
-            document.getElementById('welcomeHeading').textContent = 'Welcome, ' + (user.name || 'User');
-            document.getElementById('navUserName').textContent = user.name || '';
-
-            // Load groups
-            var groupsRes = await api('GET', '/groups');
-            var groups = groupsRes.ok ? (groupsRes.data.groups || []) : [];
-            var groupsHTML = '';
-            
-            if (groups.length === 0) {
-                groupsHTML = '<div class="empty-state">No groups yet. Join one using an invite code above.</div>';
-            } else {
-                var totalCoins = 0, totalDiamonds = 0, maxStreak = 0;
-                
-                for (var g of groups) {
-                    var walletRes = await api('GET', '/wallet/' + g.id);
-                    var wallet = walletRes.ok ? (walletRes.data.wallet || {}) : {};
-                    totalCoins += wallet.coins || 0;
-                    totalDiamonds += wallet.diamonds || 0;
-                    if ((wallet.current_streak || 0) > maxStreak) maxStreak = wallet.current_streak || 0;
-                    
-                    groupsHTML += '<a href="/group.html?id=' + g.id + '" class="card-item">' +
-                        '<div class="card-item-info"><h3>' + esc(g.name) + '</h3><p>' + esc(g.description || '') + '</p></div>' +
-                        '<span class="card-item-badge badge-group">Group</span>' +
-                        '<span class="card-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>' +
-                    '</a>';
-                }
-                
-                document.getElementById('statsRow').innerHTML =
-                    '<div class="stat-card"><div class="stat-icon coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-number">' + totalCoins + '</div><div class="stat-label">Total Coins</div></div>' +
-                    '<div class="stat-card"><div class="stat-icon diamond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/><line x1="12" y1="15" x2="12" y2="22"/></svg></div><div class="stat-number">' + totalDiamonds + '</div><div class="stat-label">Diamonds</div></div>' +
-                    '<div class="stat-card"><div class="stat-icon streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="stat-number">' + maxStreak + '</div><div class="stat-label">Best Streak</div></div>';
-            }
-            document.getElementById('groupsList').innerHTML = groupsHTML;
-
-            // Load conversations
-            var convsRes = await api('GET', '/conversations');
-            var convs = convsRes.ok ? (convsRes.data.conversations || []) : [];
-            var convsHTML = '';
-            
-            if (convs.length === 0) {
-                convsHTML = '<div class="empty-state">No conversations yet. An admin will create one for you.</div>';
-            } else {
-                convsHTML = convs.map(function(c) {
-                    var otherName = c.user1_id === user.id ? c.user2_name : c.user1_name;
-                    return '<a href="/dm.html?id=' + c.id + '" class="card-item">' +
-                        '<div class="card-item-info"><h3>Chat with ' + esc(otherName) + '</h3><p>Admin-managed conversation</p></div>' +
-                        '<span class="card-item-badge badge-dm">DM</span>' +
-                        '<span class="card-item-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>' +
-                    '</a>';
-                }).join('');
-            }
-            document.getElementById('conversationsList').innerHTML = convsHTML;
-        }
-
-        document.getElementById('inviteCodeInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') joinGroup();
+    // Load user data
+    async function loadUserData() {
+      try {
+        const response = await fetch(`${API_BASE}/user/me`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
 
-        loadDashboard();
-    </script>
+        if (!response.ok) {
+          throw new Error('Authentication failed');
+        }
+
+        currentUser = await response.json();
+        updateUI();
+        
+        if (currentUser.is_admin) {
+          document.getElementById('adminBtn').style.display = 'inline-block';
+        }
+      } catch (error) {
+        localStorage.removeItem('token');
+        window.location.href = '/';
+      }
+    }
+
+    function updateUI() {
+      const isPremium = currentUser.premium_until && new Date(currentUser.premium_until) > new Date();
+      const badge = document.getElementById('premiumBadge');
+      const premiumBtn = document.getElementById('premiumBtn');
+      
+      if (isPremium) {
+        badge.textContent = 'Premium';
+        badge.classList.add('premium');
+        premiumBtn.style.display = 'none';
+      } else {
+        badge.textContent = 'Free';
+        badge.classList.remove('premium');
+        premiumBtn.style.display = 'inline-block';
+      }
+      
+      document.getElementById('creditsCount').textContent = currentUser.credits_left;
+    }
+
+    // Load chat history
+    async function loadChatHistory() {
+      try {
+        const response = await fetch(`${API_BASE}/chat/history`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (response.ok) {
+          const history = await response.json();
+          const messagesContainer = document.getElementById('chatMessages');
+          
+          if (history.length > 0) {
+            messagesContainer.innerHTML = '';
+            history.forEach(msg => {
+              addMessage(msg.role, msg.message);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+      }
+    }
+
+    function addMessage(role, content) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.textContent = content;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Send message
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // Disable input while sending
+      input.disabled = true;
+      sendBtn.disabled = true;
+      
+      // Add user message to chat
+      addMessage('user', message);
+      input.value = '';
+      
+      try {
+        const response = await fetch(`${API_BASE}/chat/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to send message');
+        }
+        
+        // Add AI response
+        addMessage('assistant', data.reply);
+        
+        // Update credits
+        if (data.credits_left !== undefined) {
+          currentUser.credits_left = data.credits_left;
+          updateUI();
+        }
+        
+        // Reload user data to get fresh credits
+        await loadUserData();
+        
+      } catch (error) {
+        addMessage('assistant', `Error: ${error.message}`);
+        if (error.message.includes('credits')) {
+          await loadUserData();
+        }
+      } finally {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    // Premium modal
+    document.getElementById('premiumBtn').addEventListener('click', () => {
+      document.getElementById('premiumModal').classList.add('active');
+    });
+
+    function closePremiumModal() {
+      document.getElementById('premiumModal').classList.remove('active');
+    }
+
+    document.getElementById('premiumModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('premiumModal')) {
+        closePremiumModal();
+      }
+    });
+
+    // Enter key to send
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+
+    // Initialize
+    loadUserData();
+    loadChatHistory();
+  </script>
 </body>
 </html>
