@@ -1,8 +1,16 @@
-name = "alcove-messenger"
-compatibility_date = "2026-01-01"
+name = "exalyte-ai"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "."
 
 [[d1_databases]]
-binding = "COMMUNITY_DB"
-database_name = "alcove-messenger"
-database_id = "094e9f6d-b1d6-47f6-8c9a-92145f64ba79"
+binding = "DB"
+database_name = ""
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+[[routes]]
+pattern = "/api/*"
+script = "functions/api/[[route]].js"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
