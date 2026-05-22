@@ -1,17 +1,8 @@
 name = "exalyte-ai"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB"
 database_name = "exalyte-ai-db"
 database_id = "0fc27bd9-0da9-4a25-baca-958eaea0f721"
-
-# Environment variables (never commit actual values to version control)
-[vars]
-OPENROUTER_API_KEY = ""  # Will be set via CLI or dashboard
-JWT_SECRET = ""          # Will be set via CLI or dashboard
-
-[env.production]
-vars = { ENVIRONMENT = "production" }
